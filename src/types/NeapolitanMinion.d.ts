@@ -27,22 +27,27 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     "changeOwner(address)": FunctionFragment;
     "crossWithdraw(address,address,uint256,bool)": FunctionFragment;
     "deleteAction(uint256)": FunctionFragment;
+    "disableModule(address)": FunctionFragment;
     "doWithdraw(address,uint256)": FunctionFragment;
+    "enableModule(address)": FunctionFragment;
     "escapeHatch(address,uint256,bytes)": FunctionFragment;
+    "execTransactionFromModule(address,uint256,bytes,uint8)": FunctionFragment;
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)": FunctionFragment;
     "executeAction(uint256,address[],uint256[],bytes[])": FunctionFragment;
     "hashOperation(address[],uint256[],bytes[])": FunctionFragment;
     "init(address,uint256)": FunctionFragment;
     "isMember(address)": FunctionFragment;
+    "isModuleEnabled(address)": FunctionFragment;
     "isValidSignature(bytes32,bytes)": FunctionFragment;
     "minQuorum()": FunctionFragment;
-    "module()": FunctionFragment;
+    "modules(address)": FunctionFragment;
+    "modulesList(uint256)": FunctionFragment;
     "moloch()": FunctionFragment;
     "molochDepositToken()": FunctionFragment;
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "proposeAction(address[],uint256[],bytes[],address,uint256,string,bool)": FunctionFragment;
-    "setModule(address)": FunctionFragment;
     "sign(bytes32,bytes32,bytes4)": FunctionFragment;
     "signatures(bytes32)": FunctionFragment;
   };
@@ -65,12 +70,28 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "disableModule",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "doWithdraw",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "enableModule",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "escapeHatch",
     values: [string, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "execTransactionFromModule",
+    values: [string, BigNumberish, BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "execTransactionFromModuleReturnData",
+    values: [string, BigNumberish, BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "executeAction",
@@ -86,11 +107,19 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "isMember", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "isModuleEnabled",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isValidSignature",
     values: [BytesLike, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "minQuorum", values?: undefined): string;
-  encodeFunctionData(functionFragment: "module", values?: undefined): string;
+  encodeFunctionData(functionFragment: "modules", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "modulesList",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "moloch", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "molochDepositToken",
@@ -120,7 +149,6 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
       boolean
     ]
   ): string;
-  encodeFunctionData(functionFragment: "setModule", values: [string]): string;
   encodeFunctionData(
     functionFragment: "sign",
     values: [BytesLike, BytesLike, BytesLike]
@@ -147,9 +175,25 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     functionFragment: "deleteAction",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "disableModule",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "doWithdraw", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "enableModule",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "escapeHatch",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "execTransactionFromModule",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "execTransactionFromModuleReturnData",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -163,11 +207,19 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isMember", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "isModuleEnabled",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isValidSignature",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "minQuorum", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "module", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "modules", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "modulesList",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "moloch", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "molochDepositToken",
@@ -189,7 +241,6 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     functionFragment: "proposeAction",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setModule", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "sign", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "signatures", data: BytesLike): Result;
 
@@ -199,6 +250,7 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     "ChangeOwner(address)": EventFragment;
     "CrossWithdraw(address,address,uint256)": EventFragment;
     "DoWithdraw(address,uint256)": EventFragment;
+    "EnableModule(address,bool)": EventFragment;
     "ExecuteAction(bytes32,uint256,uint256,address,uint256,bytes,address)": EventFragment;
     "ExecuteEscapeHatch(address,uint256,bytes,address)": EventFragment;
     "ExecuteSignature(uint256,address)": EventFragment;
@@ -206,7 +258,6 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     "ProposeNewAction(bytes32,uint256,address,uint256,address,bool)": EventFragment;
     "ProposeSignature(uint256,bytes32,address)": EventFragment;
     "PulledFunds(address,uint256)": EventFragment;
-    "SetModule(address)": EventFragment;
     "SignatureCanceled(uint256,bytes32)": EventFragment;
   };
 
@@ -215,6 +266,7 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ChangeOwner"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CrossWithdraw"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DoWithdraw"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "EnableModule"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ExecuteAction"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ExecuteEscapeHatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ExecuteSignature"): EventFragment;
@@ -222,7 +274,6 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ProposeNewAction"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposeSignature"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PulledFunds"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SetModule"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SignatureCanceled"): EventFragment;
 }
 
@@ -326,6 +377,16 @@ export class NeapolitanMinion extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    disableModule(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "disableModule(address)"(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     doWithdraw(
       token: string,
       amount: BigNumberish,
@@ -335,6 +396,16 @@ export class NeapolitanMinion extends Contract {
     "doWithdraw(address,uint256)"(
       token: string,
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    enableModule(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "enableModule(address)"(
+      _module: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -349,6 +420,38 @@ export class NeapolitanMinion extends Contract {
       actionTo: string,
       actionValue: BigNumberish,
       actionData: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    execTransactionFromModule(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "execTransactionFromModule(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    execTransactionFromModuleReturnData(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -414,6 +517,20 @@ export class NeapolitanMinion extends Contract {
       0: boolean;
     }>;
 
+    isModuleEnabled(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      0: boolean;
+    }>;
+
+    "isModuleEnabled(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      0: boolean;
+    }>;
+
     isValidSignature(
       permissionHash: BytesLike,
       signature: BytesLike,
@@ -438,11 +555,37 @@ export class NeapolitanMinion extends Contract {
       0: BigNumber;
     }>;
 
-    module(overrides?: CallOverrides): Promise<{
+    modules(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      active: boolean;
+      index: BigNumber;
+      0: boolean;
+      1: BigNumber;
+    }>;
+
+    "modules(address)"(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      active: boolean;
+      index: BigNumber;
+      0: boolean;
+      1: BigNumber;
+    }>;
+
+    modulesList(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
       0: string;
     }>;
 
-    "module()"(overrides?: CallOverrides): Promise<{
+    "modulesList(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
       0: string;
     }>;
 
@@ -545,16 +688,6 @@ export class NeapolitanMinion extends Contract {
       withdrawAmount: BigNumberish,
       details: string,
       memberOrModule: boolean,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    setModule(
-      _module: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "setModule(address)"(
-      _module: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -679,6 +812,16 @@ export class NeapolitanMinion extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  disableModule(
+    _module: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "disableModule(address)"(
+    _module: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   doWithdraw(
     token: string,
     amount: BigNumberish,
@@ -688,6 +831,16 @@ export class NeapolitanMinion extends Contract {
   "doWithdraw(address,uint256)"(
     token: string,
     amount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  enableModule(
+    _module: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "enableModule(address)"(
+    _module: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -702,6 +855,38 @@ export class NeapolitanMinion extends Contract {
     actionTo: string,
     actionValue: BigNumberish,
     actionData: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  execTransactionFromModule(
+    to: string,
+    value: BigNumberish,
+    data: BytesLike,
+    operation: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "execTransactionFromModule(address,uint256,bytes,uint8)"(
+    to: string,
+    value: BigNumberish,
+    data: BytesLike,
+    operation: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  execTransactionFromModuleReturnData(
+    to: string,
+    value: BigNumberish,
+    data: BytesLike,
+    operation: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)"(
+    to: string,
+    value: BigNumberish,
+    data: BytesLike,
+    operation: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -754,6 +939,13 @@ export class NeapolitanMinion extends Contract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  isModuleEnabled(_module: string, overrides?: CallOverrides): Promise<boolean>;
+
+  "isModuleEnabled(address)"(
+    _module: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   isValidSignature(
     permissionHash: BytesLike,
     signature: BytesLike,
@@ -770,9 +962,32 @@ export class NeapolitanMinion extends Contract {
 
   "minQuorum()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  module(overrides?: CallOverrides): Promise<string>;
+  modules(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<{
+    active: boolean;
+    index: BigNumber;
+    0: boolean;
+    1: BigNumber;
+  }>;
 
-  "module()"(overrides?: CallOverrides): Promise<string>;
+  "modules(address)"(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<{
+    active: boolean;
+    index: BigNumber;
+    0: boolean;
+    1: BigNumber;
+  }>;
+
+  modulesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "modulesList(uint256)"(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   moloch(overrides?: CallOverrides): Promise<string>;
 
@@ -853,16 +1068,6 @@ export class NeapolitanMinion extends Contract {
     withdrawAmount: BigNumberish,
     details: string,
     memberOrModule: boolean,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  setModule(
-    _module: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "setModule(address)"(
-    _module: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -984,6 +1189,13 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    disableModule(_module: string, overrides?: CallOverrides): Promise<boolean>;
+
+    "disableModule(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     doWithdraw(
       token: string,
       amount: BigNumberish,
@@ -995,6 +1207,13 @@ export class NeapolitanMinion extends Contract {
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    enableModule(_module: string, overrides?: CallOverrides): Promise<boolean>;
+
+    "enableModule(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     escapeHatch(
       actionTo: string,
@@ -1009,6 +1228,48 @@ export class NeapolitanMinion extends Contract {
       actionData: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    execTransactionFromModule(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "execTransactionFromModule(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    execTransactionFromModuleReturnData(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      success: boolean;
+      returnData: string;
+      0: boolean;
+      1: string;
+    }>;
+
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      success: boolean;
+      returnData: string;
+      0: boolean;
+      1: string;
+    }>;
 
     executeAction(
       proposalId: BigNumberish,
@@ -1059,6 +1320,16 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    isModuleEnabled(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "isModuleEnabled(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     isValidSignature(
       permissionHash: BytesLike,
       signature: BytesLike,
@@ -1075,9 +1346,32 @@ export class NeapolitanMinion extends Contract {
 
     "minQuorum()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    module(overrides?: CallOverrides): Promise<string>;
+    modules(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      active: boolean;
+      index: BigNumber;
+      0: boolean;
+      1: BigNumber;
+    }>;
 
-    "module()"(overrides?: CallOverrides): Promise<string>;
+    "modules(address)"(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      active: boolean;
+      index: BigNumber;
+      0: boolean;
+      1: BigNumber;
+    }>;
+
+    modulesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "modulesList(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     moloch(overrides?: CallOverrides): Promise<string>;
 
@@ -1161,13 +1455,6 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    setModule(_module: string, overrides?: CallOverrides): Promise<boolean>;
-
-    "setModule(address)"(
-      _module: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     sign(
       permissionHash: BytesLike,
       signatureHash: BytesLike,
@@ -1214,6 +1501,8 @@ export class NeapolitanMinion extends Contract {
 
     DoWithdraw(token: null, amount: null): EventFilter;
 
+    EnableModule(module: null, enabled: null): EventFilter;
+
     ExecuteAction(
       id: BytesLike | null,
       proposalId: BigNumberish | null,
@@ -1258,8 +1547,6 @@ export class NeapolitanMinion extends Contract {
     ): EventFilter;
 
     PulledFunds(moloch: null, amount: null): EventFilter;
-
-    SetModule(module: null): EventFilter;
 
     SignatureCanceled(proposalId: null, msgHash: null): EventFilter;
   };
@@ -1315,6 +1602,13 @@ export class NeapolitanMinion extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    disableModule(_module: string, overrides?: Overrides): Promise<BigNumber>;
+
+    "disableModule(address)"(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     doWithdraw(
       token: string,
       amount: BigNumberish,
@@ -1324,6 +1618,13 @@ export class NeapolitanMinion extends Contract {
     "doWithdraw(address,uint256)"(
       token: string,
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    enableModule(_module: string, overrides?: Overrides): Promise<BigNumber>;
+
+    "enableModule(address)"(
+      _module: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1338,6 +1639,38 @@ export class NeapolitanMinion extends Contract {
       actionTo: string,
       actionValue: BigNumberish,
       actionData: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    execTransactionFromModule(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "execTransactionFromModule(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    execTransactionFromModuleReturnData(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1390,6 +1723,16 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isModuleEnabled(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "isModuleEnabled(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isValidSignature(
       permissionHash: BytesLike,
       signature: BytesLike,
@@ -1406,9 +1749,22 @@ export class NeapolitanMinion extends Contract {
 
     "minQuorum()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    module(overrides?: CallOverrides): Promise<BigNumber>;
+    modules(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "module()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "modules(address)"(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    modulesList(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "modulesList(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     moloch(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1492,13 +1848,6 @@ export class NeapolitanMinion extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setModule(_module: string, overrides?: Overrides): Promise<BigNumber>;
-
-    "setModule(address)"(
-      _module: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
     sign(
       permissionHash: BytesLike,
       signatureHash: BytesLike,
@@ -1578,6 +1927,16 @@ export class NeapolitanMinion extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    disableModule(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "disableModule(address)"(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     doWithdraw(
       token: string,
       amount: BigNumberish,
@@ -1587,6 +1946,16 @@ export class NeapolitanMinion extends Contract {
     "doWithdraw(address,uint256)"(
       token: string,
       amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    enableModule(
+      _module: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "enableModule(address)"(
+      _module: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1601,6 +1970,38 @@ export class NeapolitanMinion extends Contract {
       actionTo: string,
       actionValue: BigNumberish,
       actionData: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    execTransactionFromModule(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "execTransactionFromModule(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    execTransactionFromModuleReturnData(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)"(
+      to: string,
+      value: BigNumberish,
+      data: BytesLike,
+      operation: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1656,6 +2057,16 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    isModuleEnabled(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "isModuleEnabled(address)"(
+      _module: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     isValidSignature(
       permissionHash: BytesLike,
       signature: BytesLike,
@@ -1672,9 +2083,25 @@ export class NeapolitanMinion extends Contract {
 
     "minQuorum()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    module(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    modules(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    "module()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "modules(address)"(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    modulesList(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "modulesList(uint256)"(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     moloch(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1759,16 +2186,6 @@ export class NeapolitanMinion extends Contract {
       withdrawAmount: BigNumberish,
       details: string,
       memberOrModule: boolean,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    setModule(
-      _module: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "setModule(address)"(
-      _module: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

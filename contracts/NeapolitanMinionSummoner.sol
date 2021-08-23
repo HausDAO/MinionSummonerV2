@@ -131,7 +131,6 @@ contract DaoConditionalHelper {
 contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     IMOLOCH public moloch;
     address public molochDepositToken;
-    // TODO: make a mapping
     // address public module;
     struct Module {
         bool active;
@@ -139,6 +138,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     }
     mapping(address => Module) public modules;
     address[] public modulesList;
+    uint256 idx;
     uint256 public minQuorum;
     bool private initialized; // internally tracks deployment under eip-1167 proxy pattern
     mapping(uint256 => Action) public actions; // proposalId => Action
@@ -199,7 +199,6 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     event ExecuteSignature(uint256 proposalId, address executor);
 
     event ChangeOwner(address owner);
-    // TODO: changed to enable from set
     event EnableModule(address module, bool enabled);
     
     modifier memberOnly() {
@@ -341,7 +340,6 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     }
     
     function deleteAction(uint256 _proposalId) external thisOnly returns (bool) {
-        //TODO: can delete own proposal, how to check?
         // check action exists
         require(actions[_proposalId].proposer != address(0), ERROR_NO_ACTION);
         delete actions[_proposalId];
@@ -414,7 +412,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         return true;
     }
 
-    function executueCall(uint256 value, address to, bytes data) internal returns (bool success, bytes returnData) {
+    function executueCall(address to, uint256 value, bytes memory data) internal returns (bool success, bytes memory returnData) {
         require(address(this).balance >= value, ERROR_FUNDS);
         (success, returnData) = to.call{value: value}(data);
     }
@@ -430,10 +428,8 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
 
     // -- Admin Functions --
     function changeOwner(address _moloch) external thisOnly returns (bool) {
-        // TODO: withdraw any funds from dao first? may need to verify this on the front end
         moloch = IMOLOCH(_moloch);
         molochDepositToken = moloch.depositToken();
-        // verify that moloch address has a deposit token and it is not zero
         require(molochDepositToken != address(0), ERROR_ZERO_DEPOSIT_TOKEN);
         emit ChangeOwner(_moloch);
         return true;
@@ -441,7 +437,8 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
 
     // IExecutor 
     function enableModule(address _module) external thisOnly returns (bool) {
-        uint256 idx = modulesList.push(_module);
+        modulesList.push(_module);
+        idx += 1;
         modules[_module] = Module(true, idx);
         emit EnableModule(_module, true);
         return true;
@@ -460,7 +457,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         bytes memory data,
         Operation operation // always 0
     ) external returns (bool success) {
-        require(operation == Operation.call, "Delegate call not availible");
+        require(operation == Operation.Call, "Delegate call not availible");
         (success, ) = executueCall(to, value, data);
     }
 
@@ -470,34 +467,33 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         uint256 value,
         bytes memory data,
         Operation operation // always 0
-    ) external returns (bool success, bytes returnData) {
-        require(operation == Operation.call, "Delegate call not availible");
+    ) external returns (bool success, bytes memory returnData) {
+        require(operation == Operation.Call, "Delegate call not availible");
         (success, returnData) = executueCall(to, value, data);
     }
 
-    function isModuleEnabled(address _module) external returns (bool) {
+    function isModuleEnabled(address _module) external view returns (bool) {
         return modules[_module].active;
     }
 
-        function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next) {
-        // Init array with max page size
-        array = new address[](pageSize);
+    // function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next) {
+    //     // Init array with max page size
+    //     array = new address[](pageSize);
+    //     Module memory currentModule = modules[start];
 
-        // Populate return array
-        uint256 moduleCount = 0;
-        address currentModule = modulesList[start];
-        while (currentModule != address(0x0) && moduleCount < pageSize) {
-            array[moduleCount] = currentModule;
-            currentModule = modules[currentModule];
-            moduleCount++;
-        }
-        next = currentModule;
-        // Set correct size of returned array
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            mstore(array, moduleCount)
-        }
-    }
+    //     uint256 moduleCount = 0;
+    //     while (moduleCount < pageSize) {
+    //         array[moduleCount] = currentModule.index;
+    //         currentModule = modulesList[currentModule.index];
+    //         moduleCount++;
+    //     }
+    //     next = currentModule;
+    //     // Set correct size of returned array
+    //     // solhint-disable-next-line no-inline-assembly
+    //     assembly {
+    //         mstore(array, moduleCount)
+    //     }
+    // }
     
     //  -- Helper Functions --
     function isPassed(uint256 _proposalId) internal returns (bool) {
@@ -511,7 +507,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
             return true;
         }
 
-        if(module != address(0) && msg.sender==module){
+        if(modules[msg.sender].active){
             // if module is set, proposal is sposored and sender is module
             return true;
         }

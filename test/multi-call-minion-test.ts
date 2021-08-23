@@ -595,7 +595,7 @@ describe("Multi-call Minion", function () {
 
       it("Enables to set module and module can execute action", async function () {
         const action_1 = neapolitanMinion.interface.encodeFunctionData(
-          "setModule",
+          "enableModule",
           [aliceAddress]
         );
 
@@ -616,8 +616,9 @@ describe("Multi-call Minion", function () {
           [0],
           [action_1]
         );
+        
 
-        expect(await neapolitanMinion.module()).to.equal(aliceAddress);
+        expect(await neapolitanMinion.isModuleEnabled(aliceAddress)).to.equal(true);
 
         const action_2 = anyErc20.interface.encodeFunctionData("transfer", [
           aliceAddress,
@@ -659,7 +660,7 @@ describe("Multi-call Minion", function () {
 
       it("Enables to set whitelist module and module can execute action", async function () {
         const action_1 = neapolitanMinion.interface.encodeFunctionData(
-          "setModule",
+          "enableModule",
           [moduleHelper.address]
         );
 
@@ -681,7 +682,7 @@ describe("Multi-call Minion", function () {
           [action_1]
         );
 
-        expect(await neapolitanMinion.module()).to.equal(moduleHelper.address);
+        expect(await neapolitanMinion.isModuleEnabled(moduleHelper.address)).to.equal(true);
 
         const action_2 = anyErc20.interface.encodeFunctionData("transfer", [
           aliceAddress,
