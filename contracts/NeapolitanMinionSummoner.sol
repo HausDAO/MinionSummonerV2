@@ -127,13 +127,22 @@ contract DaoConditionalHelper {
     }
 
 }
+
 contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     IMOLOCH public moloch;
     address public molochDepositToken;
-    address public module;
+    // TODO: make a mapping
+    // address public module;
+    struct Module {
+        bool active;
+        uint256 index;
+    }
+    mapping(address => Module) public modules;
+    address[] public modulesList;
     uint256 public minQuorum;
     bool private initialized; // internally tracks deployment under eip-1167 proxy pattern
     mapping(uint256 => Action) public actions; // proposalId => Action
+    enum Operation {Call, DelegateCall}
 
     // events consts
 
@@ -190,7 +199,8 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     event ExecuteSignature(uint256 proposalId, address executor);
 
     event ChangeOwner(address owner);
-    event SetModule(address module);
+    // TODO: changed to enable from set
+    event EnableModule(address module, bool enabled);
     
     modifier memberOnly() {
         require(isMember(msg.sender), ERROR_MEMBER_ONLY);
@@ -198,7 +208,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     }
 
     modifier memberOrModuleOnly() {
-        require(isMember(msg.sender) || msg.sender == module, ERROR_MEMBER_OR_MODULE_ONLY);
+        require(isMember(msg.sender) || modules[msg.sender].active, ERROR_MEMBER_OR_MODULE_ONLY);
         _;
     }
 
@@ -375,7 +385,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         require(!action.executed, ERROR_EXECUTED);
 
         if(action.memberOrModule) {
-            require(isMember(msg.sender) || msg.sender == module, ERROR_MEMBER_OR_MODULE_ONLY);
+            require(isMember(msg.sender) || modules[msg.sender].active, ERROR_MEMBER_OR_MODULE_ONLY);
         }
 
         require(isPassed(proposalId), ERROR_REQS_NOT_MET);
@@ -395,14 +405,18 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         // execute calls
         actions[proposalId].executed = true;
         for (uint256 i = 0; i < actionTos.length; ++i) {
-            require(address(this).balance >= actionValues[i], ERROR_FUNDS);
-            (bool success, ) = actionTos[i].call{value: actionValues[i]}(actionDatas[i]);
+            (bool success, ) = executueCall(actionTos[i],actionValues[i],actionDatas[i]);
             require(success, ERROR_CALL_FAIL);
             emit ExecuteAction(id, proposalId, i, actionTos[i], actionValues[i], actionDatas[i], msg.sender);
         }
         delete actions[proposalId];
 
         return true;
+    }
+
+    function executueCall(uint256 value, address to, bytes data) internal returns (bool success, bytes returnData) {
+        require(address(this).balance >= value, ERROR_FUNDS);
+        (success, returnData) = to.call{value: value}(data);
     }
     
     function cancelAction(
@@ -425,11 +439,64 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         return true;
     }
 
-
-    function setModule(address _module) external thisOnly returns (bool) {
-        module = _module;
-        emit SetModule(_module);
+    // IExecutor 
+    function enableModule(address _module) external thisOnly returns (bool) {
+        uint256 idx = modulesList.push(_module);
+        modules[_module] = Module(true, idx);
+        emit EnableModule(_module, true);
         return true;
+    }
+
+    function disableModule(address _module) external thisOnly returns (bool) {
+        require(modules[_module].active, "Not an active module");
+        modules[_module] = Module(false, modules[_module].index);
+        emit EnableModule(_module, false);
+        return true;
+    }
+
+    function execTransactionFromModule(
+        address to,
+        uint256 value,
+        bytes memory data,
+        Operation operation // always 0
+    ) external returns (bool success) {
+        require(operation == Operation.call, "Delegate call not availible");
+        (success, ) = executueCall(to, value, data);
+    }
+
+    // 
+    function execTransactionFromModuleReturnData(
+        address to,
+        uint256 value,
+        bytes memory data,
+        Operation operation // always 0
+    ) external returns (bool success, bytes returnData) {
+        require(operation == Operation.call, "Delegate call not availible");
+        (success, returnData) = executueCall(to, value, data);
+    }
+
+    function isModuleEnabled(address _module) external returns (bool) {
+        return modules[_module].active;
+    }
+
+        function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next) {
+        // Init array with max page size
+        array = new address[](pageSize);
+
+        // Populate return array
+        uint256 moduleCount = 0;
+        address currentModule = modulesList[start];
+        while (currentModule != address(0x0) && moduleCount < pageSize) {
+            array[moduleCount] = currentModule;
+            currentModule = modules[currentModule];
+            moduleCount++;
+        }
+        next = currentModule;
+        // Set correct size of returned array
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            mstore(array, moduleCount)
+        }
     }
     
     //  -- Helper Functions --
