@@ -135,6 +135,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     struct Module {
         bool active;
         uint256 index;
+        address addr;
     }
     mapping(address => Module) public modules;
     address[] public modulesList;
@@ -439,14 +440,14 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     function enableModule(address _module) external thisOnly returns (bool) {
         modulesList.push(_module);
         idx += 1;
-        modules[_module] = Module(true, idx);
+        modules[_module] = Module(true, idx, _module);
         emit EnableModule(_module, true);
         return true;
     }
 
     function disableModule(address _module) external thisOnly returns (bool) {
         require(modules[_module].active, "Not an active module");
-        modules[_module] = Module(false, modules[_module].index);
+        modules[_module] = Module(false, modules[_module].index, _module);
         emit EnableModule(_module, false);
         return true;
     }
@@ -476,24 +477,19 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         return modules[_module].active;
     }
 
-    // function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next) {
-    //     // Init array with max page size
-    //     array = new address[](pageSize);
-    //     Module memory currentModule = modules[start];
+    function getModulesPaginated(address start, uint256 pageSize) external view returns (address[] memory array, address next) {
+        // Init array with max page size
+        array = new address[](pageSize);
+        Module memory currentModule = modules[start];
 
-    //     uint256 moduleCount = 0;
-    //     while (moduleCount < pageSize) {
-    //         array[moduleCount] = currentModule.index;
-    //         currentModule = modulesList[currentModule.index];
-    //         moduleCount++;
-    //     }
-    //     next = currentModule;
-    //     // Set correct size of returned array
-    //     // solhint-disable-next-line no-inline-assembly
-    //     assembly {
-    //         mstore(array, moduleCount)
-    //     }
-    // }
+        uint256 moduleCount = 0;
+        while (moduleCount < pageSize) {
+            array[moduleCount] = currentModule.addr;
+            moduleCount++;
+            currentModule = modules[modulesList[currentModule.index]];
+        }
+        next = currentModule.addr;
+    }
     
     //  -- Helper Functions --
     function isPassed(uint256 _proposalId) internal returns (bool) {

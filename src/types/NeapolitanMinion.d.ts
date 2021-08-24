@@ -34,6 +34,7 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
     "execTransactionFromModule(address,uint256,bytes,uint8)": FunctionFragment;
     "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)": FunctionFragment;
     "executeAction(uint256,address[],uint256[],bytes[])": FunctionFragment;
+    "getModulesPaginated(address,uint256)": FunctionFragment;
     "hashOperation(address[],uint256[],bytes[])": FunctionFragment;
     "init(address,uint256)": FunctionFragment;
     "isMember(address)": FunctionFragment;
@@ -96,6 +97,10 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "executeAction",
     values: [BigNumberish, string[], BigNumberish[], BytesLike[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getModulesPaginated",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "hashOperation",
@@ -198,6 +203,10 @@ interface NeapolitanMinionInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "executeAction",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getModulesPaginated",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -471,6 +480,28 @@ export class NeapolitanMinion extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    getModulesPaginated(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      array: string[];
+      next: string;
+      0: string[];
+      1: string;
+    }>;
+
+    "getModulesPaginated(address,uint256)"(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      array: string[];
+      next: string;
+      0: string[];
+      1: string;
+    }>;
+
     hashOperation(
       targets: string[],
       values: BigNumberish[],
@@ -561,8 +592,10 @@ export class NeapolitanMinion extends Contract {
     ): Promise<{
       active: boolean;
       index: BigNumber;
+      addr: string;
       0: boolean;
       1: BigNumber;
+      2: string;
     }>;
 
     "modules(address)"(
@@ -571,8 +604,10 @@ export class NeapolitanMinion extends Contract {
     ): Promise<{
       active: boolean;
       index: BigNumber;
+      addr: string;
       0: boolean;
       1: BigNumber;
+      2: string;
     }>;
 
     modulesList(
@@ -906,6 +941,28 @@ export class NeapolitanMinion extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  getModulesPaginated(
+    start: string,
+    pageSize: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<{
+    array: string[];
+    next: string;
+    0: string[];
+    1: string;
+  }>;
+
+  "getModulesPaginated(address,uint256)"(
+    start: string,
+    pageSize: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<{
+    array: string[];
+    next: string;
+    0: string[];
+    1: string;
+  }>;
+
   hashOperation(
     targets: string[],
     values: BigNumberish[],
@@ -968,8 +1025,10 @@ export class NeapolitanMinion extends Contract {
   ): Promise<{
     active: boolean;
     index: BigNumber;
+    addr: string;
     0: boolean;
     1: BigNumber;
+    2: string;
   }>;
 
   "modules(address)"(
@@ -978,8 +1037,10 @@ export class NeapolitanMinion extends Contract {
   ): Promise<{
     active: boolean;
     index: BigNumber;
+    addr: string;
     0: boolean;
     1: BigNumber;
+    2: string;
   }>;
 
   modulesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
@@ -1287,6 +1348,28 @@ export class NeapolitanMinion extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    getModulesPaginated(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      array: string[];
+      next: string;
+      0: string[];
+      1: string;
+    }>;
+
+    "getModulesPaginated(address,uint256)"(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<{
+      array: string[];
+      next: string;
+      0: string[];
+      1: string;
+    }>;
+
     hashOperation(
       targets: string[],
       values: BigNumberish[],
@@ -1352,8 +1435,10 @@ export class NeapolitanMinion extends Contract {
     ): Promise<{
       active: boolean;
       index: BigNumber;
+      addr: string;
       0: boolean;
       1: BigNumber;
+      2: string;
     }>;
 
     "modules(address)"(
@@ -1362,8 +1447,10 @@ export class NeapolitanMinion extends Contract {
     ): Promise<{
       active: boolean;
       index: BigNumber;
+      addr: string;
       0: boolean;
       1: BigNumber;
+      2: string;
     }>;
 
     modulesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
@@ -1688,6 +1775,18 @@ export class NeapolitanMinion extends Contract {
       actionValues: BigNumberish[],
       actionDatas: BytesLike[],
       overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    getModulesPaginated(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getModulesPaginated(address,uint256)"(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     hashOperation(
@@ -2019,6 +2118,18 @@ export class NeapolitanMinion extends Contract {
       actionValues: BigNumberish[],
       actionDatas: BytesLike[],
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    getModulesPaginated(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getModulesPaginated(address,uint256)"(
+      start: string,
+      pageSize: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     hashOperation(
