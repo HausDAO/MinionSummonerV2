@@ -161,6 +161,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     string private constant ERROR_THIS_ONLY = "Minion::can only be called by this";
     string private constant ERROR_MEMBER_ONLY = "Minion::not member";
     string private constant ERROR_MEMBER_OR_MODULE_ONLY = "Minion::not member or module";
+    string private constant ERROR_MODULE_ONLY = "Minion::not  module";
     string private constant ERROR_NOT_SPONSORED = "Minion::proposal not sponsored";
     string private constant ERROR_NOT_PASSED = "Minion::proposal has not passed";
     string private constant ERROR_MOLOCH_CHANGED = "Minion::moloch has been changed";
@@ -168,6 +169,9 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     string private constant ERROR_ZERO_DEPOSIT_TOKEN = "Minion:zero deposit token is not allowed";
     string private constant ERROR_MOLOCH_SHARES = "Minion:moloch must have no members with shares";
     string private constant ERROR_NO_ACTION = "Minion:action does not exist";
+    string private constant ERROR_INVALID_SIG = "MInion::erc1271 invalid signature";
+    string private constant ERROR_NO_DELEGATE_CALL = "Minion::delegate call not availible";
+
     struct Action {
         bytes32 id;
         address proposer;
@@ -276,7 +280,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         returns (bytes4)
     {
         DAOSignature memory daoSignature = signatures[permissionHash];
-        require(daoSignature.magicValue != 0, "erc1271::invalid signature");
+        require(daoSignature.magicValue != 0, ERROR_INVALID_SIG);
         require(
             daoSignature.signatureHash ==
                 keccak256(abi.encodePacked(signature)),
@@ -446,7 +450,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
     }
 
     function disableModule(address _module) external thisOnly returns (bool) {
-        require(modules[_module].active, "Not an active module");
+        require(modules[_module].active, ERROR_MODULE_ONLY);
         modules[_module] = Module(false, modules[_module].index, _module);
         emit EnableModule(_module, false);
         return true;
@@ -458,7 +462,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         bytes memory data,
         Operation operation // always 0
     ) external returns (bool success) {
-        require(operation == Operation.Call, "Delegate call not availible");
+        require(operation == Operation.Call, ERROR_NO_DELEGATE_CALL);
         (success, ) = executueCall(to, value, data);
     }
 
@@ -469,7 +473,7 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         bytes memory data,
         Operation operation // always 0
     ) external returns (bool success, bytes memory returnData) {
-        require(operation == Operation.Call, "Delegate call not availible");
+        require(operation == Operation.Call, ERROR_NO_DELEGATE_CALL);
         (success, returnData) = executueCall(to, value, data);
     }
 
@@ -483,12 +487,18 @@ contract NeapolitanMinion is IERC721Receiver, IERC1155Receiver, IERC1271 {
         Module memory currentModule = modules[start];
 
         uint256 moduleCount = 0;
-        while (moduleCount < pageSize) {
+        while (moduleCount < pageSize && currentModule.addr != address(0)) {
             array[moduleCount] = currentModule.addr;
-            moduleCount++;
-            currentModule = modules[modulesList[currentModule.index]];
+            moduleCount++; 
+            if(currentModule.index == modulesList.length - 1) {
+                next = address(0);
+                break;
+            } else {
+                currentModule = modules[modulesList[currentModule.index + 1]];
+                next = currentModule.addr;
+            }
         }
-        next = currentModule.addr;
+        
     }
     
     //  -- Helper Functions --
@@ -572,6 +582,8 @@ contract NeapolitanMinionFactory is CloneFactory {
         address moloch, 
         string memory details, 
         uint256 minQuorum) external returns (address) {
+        // TODO: register/deploy multiple modules?
+        // remove minQuorum
         NeapolitanMinion minion = NeapolitanMinion(createClone(template));
         minion.init(moloch, minQuorum);
         
@@ -603,5 +615,37 @@ contract WhitelistModuleHelper {
         bytes[] calldata _actionDatas) public {
         require(whitelist[msg.sender], "Whitelist Module::Not whitelisted");
         minion.executeAction(_proposalId, _actionTos, _actionValues, _actionDatas);
+    }
+}
+
+contract EarlyExecuteModuleHelper {
+
+
+    NeapolitanMinion minion;
+    uint minQuorum;
+    constructor(address payable _minion, uint256 _minQuorum) {
+        minion = NeapolitanMinion(_minion);
+        require(_minQuorum >= 0 && _minQuorum <= 100, "Min Quorum not in bounds");
+        minQuorum = _minQuorum;
+    }
+
+    function executeAction(
+        uint256 _proposalId,
+        address[] calldata _actionTos,
+        uint256[] calldata _actionValues,
+        bytes[] calldata _actionDatas) public {
+        IMOLOCH moloch = IMOLOCH(minion.moloch());
+        uint256 totalShares = moloch.totalShares();
+        bool[6] memory flags = moloch.getProposalFlags(_proposalId);
+        require(flags[0], "Not sponsored");
+
+        if (minQuorum != 0) {
+            (, , , , , , , , , , uint256 yesVotes, uint256 noVotes) = moloch.proposals(_proposalId);
+            uint256 quorum = yesVotes * 100 / totalShares;
+            // if quorum is set it must be met and there can be no NO votes
+            require(quorum >= minQuorum && noVotes < 1, "Not able to Early execute");  
+        }
+        minion.executeAction(_proposalId, _actionTos, _actionValues, _actionDatas);
+
     }
 }
