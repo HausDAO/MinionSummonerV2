@@ -168,8 +168,6 @@ describe.only('Safe Minion Functionality', function () {
 
     it('Sets up the tests', async function () {
       const threshold = await gnosisSafe.getThreshold()
-      console.log({ safeMinion: safeMinion.address, gnosisSafe: gnosisSafe.address })
-      console.log({ threshold })
       expect(await moloch.totalGuildBankTokens()).to.equal(1)
       expect((await moloch.members(aliceAddress)).shares).to.equal(50)
       expect((await moloch.members(deployerAddress)).shares).to.equal(100)
@@ -258,6 +256,15 @@ describe.only('Safe Minion Functionality', function () {
         expect(await gnosisSafe.isModuleEnabled(safeMinion.address)).to.equal(true)
         expect(await gnosisSafe.isModuleEnabled(deployerAddress)).to.equal(true)
       })
+      it('Does not allow setup to be called again', async function() {
+        const abiCoder = ethers.utils.defaultAbiCoder
+        const encoded = abiCoder.encode(
+            ["address", "address", "address", "uint256"],
+            [moloch.address, gnosisSafe.address, multisend.address, 10]
+    )
+        expect(safeMinionTemplate.setUp(encoded)).to.be.revertedWith('Initializable: contract is already initialized')
+        expect(safeMinion.setUp(encoded)).to.be.revertedWith('Initializable: contract is already initialized')
+      })
       it('Enables a minion to add another module', async function () {
         expect(await gnosisSafe.isModuleEnabled(deployerAddress)).to.equal(false)
         const action_1 = gnosisSafe.interface.encodeFunctionData('enableModule', [deployerAddress])
@@ -278,6 +285,18 @@ describe.only('Safe Minion Functionality', function () {
 
         await safeMinion.executeAction(0, multi_action)
         expect(await gnosisSafe.isOwner(deployerAddress)).to.equal(true)
+      })
+      
+      it('Enables a minion to swap owners', async function () {
+        expect(await gnosisSafe.isOwner(deployerAddress)).to.equal(false)
+        expect(await gnosisSafe.isOwner(safeMinion.address)).to.equal(true)
+        const action_1 = gnosisSafe.interface.encodeFunctionData('swapOwner', ['0x0000000000000000000000000000000000000001', safeMinion.address ,deployer.address])
+        const multi_action = encodeMultiAction(multisend, [action_1], [gnosisSafe.address], [0])
+        await safeMinion.proposeAction(multi_action, anyErc20.address, 0, 'test', false)
+        await doProposal(true, 0, moloch)
+        await safeMinion.executeAction(0, multi_action)
+        expect(await gnosisSafe.isOwner(deployerAddress)).to.equal(true)
+        expect(await gnosisSafe.isOwner(safeMinion.address)).to.equal(false)
       })
     })
 

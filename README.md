@@ -3,53 +3,155 @@ Summon All the Minions
 
 ## Safe Minion Deployments
 
-Polygon: https://polygonscan.com/address/0xbC37509A283E2bb67fd151c34E72e826C501E108#writeContract
+Rinkeby: 0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8
 
-Rinkeby: https://rinkeby.etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108
+Kovan: 0xa1b97d22e22507498b350a9edea85c44ba7dbc01
 
-XDai: https://blockscout.com/xdai/mainnet/address/0xbC37509A283E2bb67fd151c34E72e826C501E108/transactions
+Mainnet: 0xbc37509a283e2bb67fd151c34e72e826c501e108
 
-Mainnet: coming soon
+Polygon: xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
-## Documetation is still WIP
+xDai: 0xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
-### Neapolitan Minion walkthrough and docs
+### Safe Minion walkthrough and docs
 
-https://jonathanprozzi.notion.site/Neapolitan-Minion-Summoner-Documentation-788657ab7f1348168f4850be696593be
+DAOHaus uses the Moloch DAO framework for share allocation, voting, and treasury management. Moloch DAOs alone are not able to interact with arbitrary external contracts.
 
+DAOHaus developers created Minion contracts which associate arbitrary external calls with DAO proposals. This made it so Moloch DAOs could govern state changes on other contracts using the Minion as an adapter.
 
-## Summoning 
-Summon a minion for your DAO, give it a name, just 'cause this is a vanilla minion (the OG) doesn't mean it doesn't deserve some spice. 
+Now, by making Minions Zodiac-compatible, it enables us to take Minions even further, expanding the possibilities for what DAOs can do.
 
-Summoning a minion is easy. The only arguments the summon function takes are the address of the moloch it will minion for (e.g. it's parent DAO) and a description, which can be a name or other description for this minion's purpose. The summon function emits a SummonMinion event where you can grab the new minion's address.
+### Use cases
 
-Details of summoned minions can be looked up in the minions mapping, which will allow you to search by minion address and retrieve information about the minion's description and the Moloch it serves. 
+Through Minion Safes, DAOHaus DAOs can do the following (and much more):
 
-## Using your minion 
+* Manage a bank of NFTs
+* Create orders with on-chain and signature-based NFT marketplaces
+* Provide liquidity with AMMs
+* Upgrade to new governance frameworks (eg MolochV3 😉) without having to transfer their assets
+* Elect temporary delegates to manage assets in a Safe
+* Interact with any decentralized application through the Safe Wallet Connect integration
+* Create custom 'rage quit' adapters to manage non-divisible assets or multi-bank treasuries
+* Update a current Gnosis Safe to a Daohaus DAO 
+* Manage multiple Safes
+* Transfer an entire set of assets (DAO 
+Mergers & Acquisitions)
 
-Minion is meant for submitting proposals to DAOs for arbitrary contract calls (i.e. minion proposals allow the DAO to submit proposals that will allow it to interact with other smart contracts). The way to use a minion is to submit the proposal with all the normal fields plus the byte data you want to send to the other contract's function. One way to get this byte data is by pretending to interact with the target function using MetaMask and then clicking on the data tab and copying and pasting the Hex data into the byte data field for a minion proposal--there are also other ways of getting the necessary byte data that are slightly more advanced. 
-
-Once your minion proposal has passed in the DAO you can call the executeAction function. The executeAction function just takes the proposalId to make the desired contract interaction happen. 
-
-The doWithdraw function allows the minion to collect any funds waiting for the minion in its parent DAO. The doWithdraw function takes the token and amount as its arguments. 
-
-Other features of the vanilla minion are the ability to withdraw funds and cancel proposals. 
-
-The crossWithdraw function means that you can either draw funds from any Moloch into the minion (when transfer is set to false) or directly into the parent moloch (when transfer is set to true). The crossWithdraw function just takes a target address, a token address, an amount, and a true / false on that transfer option mentioned above. The crossWithdraw can only pull tokens directly into its parent DAO if the tokens have already been whitelisted. 
-
-The cancelProposal function allows an proposer to cancel the proposal they submitted. This function just takes the proposalId of the proposal they submitted. The cancelProposal function must be called prior to the proposal being sponsored in the parent moloch. 
-
-## Deployments
-
-### version 1
-xDAI -
-
-kovan -
-
-rinkeby -
+### Why Zodiac
 
 
-mainnet -
+*Quote from Gnosis*
+> A composable design philosophy for DAOs, Zodiac is a collection of tools built according to an open standard. The Zodiac open standard enables DAOs to act more like constellations, connecting platforms, protocols, and chains, no longer confined to monolithic designs. In other words: **Zodiac is the expansion pack for DAOs**
+
+V0 Minions have multiple responsibilities.
+
+* Translate Moloch DAO proposals into arbitrary external calls
+* Store a separate treasury of DAO assets including NFTs and other tokens the Moloch DAO does not support
+
+Through Zodiac we can allow the Minion to focus only on translating proposals to external calls, and store all assets in a Gnosis Safe.
+
+With assets in a Gnosis Safe, we can enable a wide variety of governance options and migration paths:
+
+### Governance Options
+
+| Governance | Rules |
+| -------- | -------- |
+| Standard Moloch     | Share weighted, full voting & grace periods |
+| Quorum     | Early execution allowed if quorum is reached |
+| Delegates     | Temporarily elected EOAs to act as delegates of the DAO for high stakes, time sensitive executions |
+
+
+
+### Migration Paths
+
+DAOs that start as a multisig with signers can decentralize their governance over time by handing over control of the Safe to a Moloch's Minion. The assets will then only be able to be managed through governance proposals.
+
+DAOs that want to upgrade to a newer Moloch or other governance frameworks do not have to move all of their assets. They simply change which Minion is the module on the Safe through a vote.
+
+DAOs that want to sell or transfer a large group of assets from their DAO to another can just change the owner of the Safe, effictively transfering everything in one large batch for very little gas.
+
+## How it works
+
+A Minion is deployed and configured to make proposals on, listen to a specific Moloch.
+
+The Minion inherits the `Module.sol` contract from the Zodiac library. The Minion then uses the Module's `exec` function to execute arbitrary external calls on behalf of the Safe.
+
+The Minion **always** uses the Gnosis Multisend library so that multiple transactions can be associated with a single proposal.
+
+### Contract Signatures
+
+The Safe is configured to use the `Compatibility Fallback Handler` which enables a safe to make EIP1271 contract signatures. In order to "sign" a message as a DAO, a member can make a proposal to `delegateCall` to the Gnosis `SignMessageLib`
+
+
+### Streamlined Deployment
+
+If the DAO is setting up a new Gnosis safe, they can deploy the Safe, Minion, and configure all of the settings in a single transaction.
+
+```
+/// @dev Function to summon minion and configure with a new safe
+    /// @param _moloch Already deployed Moloch to instruct minion
+    /// @param _details Optional metadata to store
+    /// @param _minQuorum Optional quorum settings, set 0 to disable
+    /// @param _saltNonce Number used to calculate the address of the new minion
+    function summonMinionAndSafe(
+        address _moloch,
+        string memory _details,
+        uint256 _minQuorum,
+        uint256 _saltNonce
+    ) external returns (address);
+```
+
+This function does the following:
+
+1. Deploys a new Minion using a proxy factory
+2. Deploys a new Safe using a proxy factory
+3. Sets up the Minion to use the Gnosis multisend library
+4. Sets up the Safe to use the Gnosis Compatibility fallback handler, and enables the minion as the sole module and signer
+
+### Deployment with existing safe
+
+If the DAO has a Safe already, they have to deploy in 2 steps.
+
+1. Deploy Minion
+2. Submit transaction on Safe to enable Minoin as module
+
+```
+    /// @dev Function to only summon a minion to be attached to an existing safe
+    /// @param _moloch Already deployed Moloch to instruct minion
+    /// @param _avatar Already deployed safe
+    /// @param _details Optional metadata to store
+    /// @param _minQuorum Optional quorum settings, set 0 to disable
+    /// @param _saltNonce Number used to calculate the address of the new minion
+    function summonMinion(
+        address _moloch,
+        address _avatar,
+        string memory _details,
+        uint256 _minQuorum,
+        uint256 _saltNonce
+    ) external returns (address);
+```
+
+## Contract Addresses
+
+
+
+| Network | Summoner |
+| -------- | -------- |
+| Rinkeby     | https://rinkeby.etherscan.io/address/0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8   |
+| Kovan     | https://kovan.etherscan.io/address/0xa1b97d22e22507498b350a9edea85c44ba7dbc01     |
+| Mainnet     | https://etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108     |
+| Polygon     | https://polygonscan.com/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01     |
+| xDai     | https://blockscout.com/xdai/mainnet/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01/transactions     |
+
+## Deploy one today!
+
+Safe Minions are live on the DAOHaus app. Add one to your DAO and start expanding your community's coordination toolbox.
+
+
+![](https://i.imgur.com/fjhrEdw.png)
+
+![](https://i.imgur.com/a4guQDZ.png)
+
 
 ## Credits
 
