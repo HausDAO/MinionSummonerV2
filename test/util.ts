@@ -27,12 +27,12 @@ export const doProposal = async (pass: boolean, proposalId: number, moloch: Molo
   await moloch.processProposal(proposalId)
 }
 
-export const encodeMultiAction = (multisend: MultiSend, actions: string[], tos: string[], operations: number[]) => {
+export const encodeMultiAction = (multisend: MultiSend, actions: string[], tos: string[], values: BigNumber[], operations: number[]) => {
   let metatransactions: MetaTransaction[] = []
   for (let index = 0; index < actions.length; index++) {
     metatransactions.push({
       to: tos[index],
-      value: 0,
+      value: values[index],
       data: actions[index],
       operation: operations[index],
     })

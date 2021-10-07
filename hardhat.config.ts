@@ -3,6 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
 import "hardhat-gas-reporter"
 import "@nomiclabs/hardhat-etherscan";
+// import "solidity-coverage";
 
 import * as fs from 'fs'
 import "hardhat-typechain";
@@ -44,6 +45,12 @@ const config: HardhatUserConfig = {
     },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    arbitrum: {
+      url: " https://arbitrum-mainnet.infura.io/v3/cc7ca25d68f246f393d7630842360c47", //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
@@ -98,11 +105,20 @@ const config: HardhatUserConfig = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    // apiKey: "61ED96HQAY6PASTEWRXN6AMYQEKM8SYTRY" // etherscan
-    apiKey: "9QW4RIZ2EPRSYMPN54FQ4EZIMUX2G9AJPW"// polygon scan
+    apiKey: "61ED96HQAY6PASTEWRXN6AMYQEKM8SYTRY" // etherscan
+    // apiKey: "9QW4RIZ2EPRSYMPN54FQ4EZIMUX2G9AJPW"// polygon scan
   },
   solidity: {
     compilers: [
+      {
+        version: "0.4.19",
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200
+          }
+        }
+      },
       {
         version: "0.7.5",
         settings: {

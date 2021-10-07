@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import { solidity } from 'ethereum-waffle'
 import { randomBytes } from 'crypto'
-import { Contract, ContractFactory, BigNumberish, Wallet } from 'ethers'
+import { Contract, ContractFactory, BigNumberish, Wallet, BigNumber } from 'ethers'
 import { use, expect } from 'chai'
 import { AnyErc20 } from '../src/types/AnyErc20'
 import { Moloch } from '../src/types/Moloch'
@@ -184,7 +184,7 @@ describe.only('Safe Minion Functionality', function () {
 
       it('Allows safe to change avatar', async function () {
         const change_avatar_action = safeMinion.interface.encodeFunctionData('setAvatar', [bobAddress])
-        const multi_action = encodeMultiAction(multisend, [change_avatar_action], [safeMinion.address], [0])
+        const multi_action = encodeMultiAction(multisend, [change_avatar_action], [safeMinion.address], [BigNumber.from(0)],  [0])
         await safeMinion.proposeAction(multi_action, anyErc20.address, 0, 'test', false)
 
         await doProposal(true, 0, moloch)
@@ -196,7 +196,7 @@ describe.only('Safe Minion Functionality', function () {
 
       it('Allows safe to change owner', async function () {
         const change_owner_action = safeMinion.interface.encodeFunctionData('transferOwnership', [bobAddress])
-        const multi_action = encodeMultiAction(multisend, [change_owner_action], [safeMinion.address], [0])
+        const multi_action = encodeMultiAction(multisend, [change_owner_action], [safeMinion.address], [BigNumber.from(0)], [0])
         await safeMinion.proposeAction(multi_action, anyErc20.address, 0, 'test', false)
 
         await doProposal(true, 0, moloch)
@@ -429,7 +429,7 @@ describe.only('Safe Minion Functionality', function () {
         const action_1 = anyErc20.interface.encodeFunctionData('transfer', [aliceAddress, 10])
         const action_2 = anyErc20.interface.encodeFunctionData('transfer', [aliceAddress, 20])
 
-        const multi_action = encodeMultiAction(multisend, [action_1, action_2], [anyErc20.address, anyErc20.address], [0, 0])
+        const multi_action = encodeMultiAction(multisend, [action_1, action_2], [anyErc20.address, anyErc20.address], [BigNumber.from(0), BigNumber.from(0)], [0, 0])
 
         await safeMinion.proposeAction(multi_action, anyErc20.address, 0, 'test', false)
 

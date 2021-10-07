@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import { SafeMinion } from '../types/SafeMinion'
 import { SafeMinionSummoner } from '../types/SafeMinionSummoner'
-import { kovan, mainnet, polygon, rinkeby, xdai } from '../util/contractAddresses'
+import { arbitrum, kovan, mainnet, polygon, rinkeby, xdai } from '../util/contractAddresses'
 
 async function main() {
   const accounts = await ethers.getSigners()
@@ -14,7 +14,7 @@ async function main() {
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
-  const contractAddresses = xdai
+  const contractAddresses = arbitrum
   
   const SafeMinion = await ethers.getContractFactory('SafeMinion')
   const SafeMinionSummoner = await ethers.getContractFactory('SafeMinionSummoner')
@@ -23,12 +23,17 @@ async function main() {
   // const ERC1271MinionTemplate = await ethers.getContractFactory('ERC1271Minion')
   // const ERC1271MinionSummoner = await ethers.getContractFactory('ERC1271MinionFactory')
   console.log('ready for deploy')
+  
+  const acct1 = accounts[0]
+  console.log(ethers.utils.formatEther(await acct1.getBalance()))
 
-  const safeMinionTemplate = (await SafeMinion.deploy({gasLimit: 3000000, gasPrice: 80000000000})) as SafeMinion
-  console.log({safeMinionTemplate})
+  const safeMinionTemplate = (await (await SafeMinion.deploy({gasPrice: 600000000})).estimateGas) as SafeMinion
+  // console.log({estimatedGas: estimatedGas.toString()})
+  // await acct1.sendTransaction({data: deploymentData, gasPrice: 800000000, gasLimit: estimatedGas})
+  
   await safeMinionTemplate.deployTransaction.wait()
   console.log('safe deployed')
-  const safeMinionSummoner = (await SafeMinionSummoner.deploy(safeMinionTemplate.address, contractAddresses.gnosisSingleton, contractAddresses.gnosisFallback, contractAddresses.gnosisMultisend, {gasPrice: 80000000000})) as SafeMinionSummoner
+  const safeMinionSummoner = (await SafeMinionSummoner.deploy(safeMinionTemplate.address, contractAddresses.gnosisSingleton, contractAddresses.gnosisFallback, contractAddresses.gnosisMultisend, {gasPrice: 800000000})) as SafeMinionSummoner
 
   // const conditionalMinionTemplate = (await ConditionalMinionTemplate.deploy()) as ConditionalMinion
   // const conditionalMinionFactory = await ConditionalMinionSummoner.deploy(conditionalMinionTemplate.address)
