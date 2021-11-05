@@ -23,6 +23,7 @@ contract WMATIC {
     string public name     = "Wrapped Matic";
     string public symbol   = "WMATIC";
     uint8  public decimals = 18;
+    address public _owner = address(0);
 
     event  Approval(address indexed src, address indexed guy, uint wad);
     event  Transfer(address indexed src, address indexed dst, uint wad);
@@ -77,6 +78,10 @@ contract WMATIC {
         Transfer(src, dst, wad);
 
         return true;
+    }
+
+    function transferOwnership(address newOwner) public {
+        _owner = newOwner;
     }
 }
 

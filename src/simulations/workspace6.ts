@@ -37,7 +37,7 @@ async function main() {
   // const anyErc20 = (await AnyERC20.deploy()) as AnyErc20
   const minionAddr = '0xde1eaae681eed5f9b4541f3eda5d0326f9935707'
   const safeAddr = '0xf1d1165b922fecb1227e5dfb46b4a19015972f62'
-  const atokenAddr = '0x9706bef12541e72fce21c487bbe96e540ea5dd65'
+  const atokenAddr = '0x997311509f997cfc4a876a3265711cc325a64f14'
   const multisendAddr = '0xa238cbeb142c10ef7ad8442c6d1f9e89e07e7761'
   
   // const weth9Mainnet = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
