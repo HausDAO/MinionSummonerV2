@@ -115,7 +115,6 @@ describe.only('Safe Minion Functionality', function () {
     signMessageLib = (await SignMessageLib.deploy()) as SignMessageLib
     handler = (await CompatibilityFallbackHandler.deploy()) as CompatibilityFallbackHandler
     safeMinionTemplate = (await SafeMinion.deploy()) as SafeMinion
-    const molochTemplate = await Moloch.deploy()
 
     safeMinionSummoner = (await SafeMinionSummoner.deploy(
       safeMinionTemplate.address,

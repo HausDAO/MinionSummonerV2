@@ -6,8 +6,8 @@ pragma abicoder v2;
 
 import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
 import "@gnosis.pm/safe-contracts/contracts/libraries/MultiSend.sol";
-import "./zodiac/core/Module.sol";
-import "./zodiac/factory/ModuleProxyFactory.sol";
+import "@gnosis.pm/zodiac/contracts/core/Module.sol";
+import "@gnosis.pm/zodiac/contracts/factory/ModuleProxyFactory.sol";
 
 interface IERC20 {
     // brief interface for moloch erc20 token txs
@@ -138,6 +138,7 @@ interface IMOLOCH {
 ///
 ///  Minion is owned by the Safe
 ///  Owner can change the safe address via `setAvatar`
+///  Owner can change the target address via `setTarget`
 /// @author Isaac Patka, Dekan Brown
 contract SafeMinion is Enum, Module {
     // Moloch configured to instruct this minion
@@ -158,8 +159,7 @@ contract SafeMinion is Enum, Module {
         address proposer;
         bool executed;
         address token;
-        uint256 amount;
-        address moloch;
+        bool nonZeroAmount;
         bool memberOnlyEnabled; // 0 anyone , 1 memberOnly
     }
 
@@ -252,15 +252,13 @@ contract SafeMinion is Enum, Module {
 
         // Set the Gnosis safe address
         avatar = _avatar;
+        target = _avatar; /*Set target to same address as avatar on setup - can be changed later via setTarget, though probably not a good idea*/
 
         // Set the library to use for all transaction executions
         multisendLibrary = _multisendLibrary;
 
         // Set the default moloch token to use in proposals
         molochDepositToken = moloch.depositToken();
-
-        // Set as initialized so setUp cannot be entered again
-        initialized = true;
     }
 
     /// @dev Member accessible interface to withdraw funds from Moloch directly to Safe
@@ -283,23 +281,28 @@ contract SafeMinion is Enum, Module {
 
     /// @dev Member accessible interface to withdraw funds from another Moloch directly to Safe or to the DAO
     /// @notice Can only be called by member of Moloch
-    /// @param _target MOLOCH address to withdraw from
+    /// @param _moloch MOLOCH address to withdraw from
     /// @param _token ERC20 address of token to withdraw
     /// @param _amount ERC20 token amount to withdraw
-    function crossWithdraw(address _target, address _token, uint256 _amount, bool _transfer) external memberOnly {
+    function crossWithdraw(
+        IMOLOCH _moloch,
+        address _token,
+        uint256 _amount,
+        bool _transfer
+    ) external memberOnly {
         // Construct transaction data for safe to execute
         bytes memory withdrawData = abi.encodeWithSelector(
-            IMOLOCH(_target).withdrawBalance.selector,
+            _moloch.withdrawBalance.selector,
             _token,
             _amount
-        );            
+        );
         require(
-            exec(_target, 0, withdrawData, Operation.Call),
+            exec(address(_moloch), 0, withdrawData, Operation.Call),
             ERROR_CALL_FAIL
         );
 
-        // Transfers token into DAO. 
-        if(_transfer) {
+        // Transfers token into DAO.
+        if (_transfer) {
             bool whitelisted = moloch.tokenWhitelist(_token);
             require(whitelisted, ERROR_NOT_WL);
             bytes memory transferData = abi.encodeWithSelector(
@@ -312,8 +315,8 @@ contract SafeMinion is Enum, Module {
                 ERROR_CALL_FAIL
             );
         }
-        
-        emit CrossWithdraw(_target, _token, _amount);
+
+        emit CrossWithdraw(address(_moloch), _token, _amount);
     }
 
     /// @dev Internal utility function to store hash of transaction data to ensure executed action is the same as proposed action
@@ -335,8 +338,7 @@ contract SafeMinion is Enum, Module {
             proposer: msg.sender,
             executed: false,
             token: _withdrawToken,
-            amount: _withdrawAmount,
-            moloch: address(moloch),
+            nonZeroAmount: _withdrawAmount > 0,
             memberOnlyEnabled: _memberOnlyEnabled
         });
         actions[_proposalId] = _action;
@@ -364,10 +366,11 @@ contract SafeMinion is Enum, Module {
         // If quorum enabled, calculate status. Quorum must be met and there cannot be any NO votes
         if (minQuorum != 0) {
             uint256 totalShares = moloch.totalShares();
-            (, , , , , , , , , , uint256 yesVotes, uint256 noVotes) = moloch
-                .proposals(_proposalId);
+            (, , , , , , , , , , uint256 yesVotes, ) = moloch.proposals(
+                _proposalId
+            );
             uint256 quorum = (yesVotes * 100) / totalShares;
-            return quorum >= minQuorum && noVotes < 1;
+            return quorum >= minQuorum;
         }
 
         return false;
@@ -445,15 +448,19 @@ contract SafeMinion is Enum, Module {
         emit ActionDeleted(_proposalId);
         return true;
     }
-    
+
     /// @dev Function to Execute arbitrary code as the minion - useful if funds are accidentally sent here
     /// @notice Can only be called by the avatar which means this can only be called if passed by another
     ///     proposal or by a delegated signer on the Safe
     /// @param _to address to call
     /// @param _value value to include in wei
     /// @param _data arbitrary transaction data
-    function executeAsMinion(address _to, uint256 _value, bytes calldata _data) external avatarOnly {
-        (bool success,) = _to.call{value: _value}(_data);
+    function executeAsMinion(
+        address _to,
+        uint256 _value,
+        bytes calldata _data
+    ) external avatarOnly {
+        (bool success, ) = _to.call{value: _value}(_data);
         require(success, "call failure");
     }
 
@@ -486,15 +493,15 @@ contract SafeMinion is Enum, Module {
         require(_id == _action.id, ERROR_NOT_VALID);
 
         // Withdraw tokens from Moloch to safe if specified by the proposal, and if they have not already been withdrawn via `doWithdraw`
-        if (
-            _action.amount > 0 &&
-            moloch.getUserTokenBalance(avatar, _action.token) > 0
-        ) {
-            // withdraw tokens if any
-            doWithdraw(
-                _action.token,
-                moloch.getUserTokenBalance(avatar, _action.token)
+        if (_action.nonZeroAmount) {
+            uint256 _balance = moloch.getUserTokenBalance(
+                avatar,
+                _action.token
             );
+            if (_balance > 0) {
+                // withdraw tokens if any
+                doWithdraw(_action.token, _balance);
+            }
         }
 
         // Execute the action via the multisend library
@@ -525,30 +532,32 @@ contract SafeMinion is Enum, Module {
 /// @dev Can deploy a minion and a new safe, or just a minion to be attached to an existing safe
 /// @author Isaac Patka, Dekan Brown
 contract SafeMinionSummoner is ModuleProxyFactory {
-
     // Template contract to use for new minion proxies
     address payable public immutable safeMinionSingleton;
-    
+
     // Template contract to use for new Gnosis safe proxies
-    address public gnosisSingleton;
-    
+    address public immutable gnosisSingleton;
+
     // Library to use for EIP1271 compatability
-    address public gnosisFallbackLibrary;
-    
+    address public immutable gnosisFallbackLibrary;
+
     // Library to use for all safe transaction executions
-    address public gnosisMultisendLibrary;
-    
+    address public immutable gnosisMultisendLibrary;
+
     // Track list and count of deployed minions
     address[] public minionList;
-    uint256 public minionCount;
-    
+
+    function minionCount() public view returns (uint256) {
+        return minionList.length;
+    }
+
     // Track metadata and associated moloch for deployed minions
     struct AMinion {
         address moloch;
         string details;
     }
     mapping(address => AMinion) public minions;
-    
+
     // Public type data
     string public constant minionType = "SAFE MINION V0";
 
@@ -606,13 +615,16 @@ contract SafeMinionSummoner is ModuleProxyFactory {
 
         SafeMinion _minion = SafeMinion(
             payable(
-                deployModule(safeMinionSingleton, _initializerCall, _saltNonce)
+                deployModule(
+                    safeMinionSingleton,
+                    abi.encodeWithSignature("setUp(bytes)", _initializer),
+                    _saltNonce
+                )
             )
         );
 
         minions[address(_minion)] = AMinion(_moloch, _details);
         minionList.push(address(_minion));
-        minionCount++;
 
         emit SummonMinion(
             address(_minion),
@@ -637,17 +649,30 @@ contract SafeMinionSummoner is ModuleProxyFactory {
         uint256 _minQuorum,
         uint256 _saltNonce
     ) external returns (address) {
-        // Deploy new minion but do not set it up yet
-        SafeMinion _minion = SafeMinion(
-            payable(createProxy(safeMinionSingleton, keccak256(abi.encodePacked(_moloch, _saltNonce))))
+        // Deploy new safe but do not set it up yet
+        GnosisSafe _safe = GnosisSafe(
+            payable(
+                createProxy(
+                    gnosisSingleton,
+                    keccak256(abi.encodePacked(_moloch, _saltNonce))
+                )
+            )
         );
 
-        // Deploy new safe but do not set it up yet
-        GnosisSafe _safe = GnosisSafe(payable(createProxy(gnosisSingleton, keccak256(abi.encodePacked(address(_minion), _saltNonce)))));
+        bytes memory _initializer = abi.encode(
+            _moloch,
+            address(_safe),
+            gnosisMultisendLibrary,
+            _minQuorum
+        );
 
-        // Initialize the minion now that we have the new safe address
-        _minion.setUp(
-            abi.encode(_moloch, address(_safe), gnosisMultisendLibrary, _minQuorum)
+        // Deploy new minion but do not set it up yet
+        SafeMinion _minion = SafeMinion(
+            deployModule(
+                safeMinionSingleton,
+                abi.encodeWithSignature("setUp(bytes)", _initializer),
+                _saltNonce
+            )
         );
 
         // Generate delegate calls so the safe calls enableModule on itself during setup
@@ -685,7 +710,6 @@ contract SafeMinionSummoner is ModuleProxyFactory {
 
         minions[address(_minion)] = AMinion(_moloch, _details);
         minionList.push(address(_minion));
-        minionCount++;
         emit SummonMinion(
             address(_minion),
             _moloch,
