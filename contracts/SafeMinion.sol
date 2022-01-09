@@ -216,7 +216,7 @@ contract SafeMinion is Enum, Module {
     }
 
     /// @dev This constructor ensures that this contract can only be used as a master copy for Proxy contracts
-    constructor() {
+    constructor() initializer {
         // By setting the owner it is not possible to call setUp
         // This is an unusable minion, perfect for the singleton
         __Ownable_init();
@@ -226,7 +226,7 @@ contract SafeMinion is Enum, Module {
     /// @dev Factory Friendly setup function
     /// @notice Can only be called once by factory
     /// @param _initializationParams ABI Encoded parameters needed for configuration
-    function setUp(bytes memory _initializationParams) public override {
+    function setUp(bytes memory _initializationParams) public override(FactoryFriendly) initializer {
         // Decode initialization parameters
         (
             address _moloch,
@@ -658,7 +658,7 @@ contract SafeMinionSummoner is ModuleProxyFactory {
                 )
             )
         );
-
+        
         bytes memory _initializer = abi.encode(
             _moloch,
             address(_safe),
