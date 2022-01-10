@@ -175,6 +175,8 @@ contract SafeMinion is Enum, Module {
     string private constant ERROR_NOT_PROPOSER = "Minion::not proposer";
     string private constant ERROR_MEMBER_ONLY = "Minion::not member";
     string private constant ERROR_AVATAR_ONLY = "Minion::not avatar";
+    string private constant ERROR_INVALID_SELF_XWITHDRAW = "Minion::invalid self crosswithdraw";
+    string private constant ERROR_INVALID_BAL_XWITHDRAW = "Minion::invalid balance crosswithdraw";
     string private constant ERROR_NOT_SPONSORED =
         "Minion::proposal not sponsored";
     string private constant ERROR_MIN_QUORUM_BOUNDS =
@@ -284,12 +286,15 @@ contract SafeMinion is Enum, Module {
     /// @param _moloch MOLOCH address to withdraw from
     /// @param _token ERC20 address of token to withdraw
     /// @param _amount ERC20 token amount to withdraw
+    /// @param _transfer Flag to send the retrieved tokens to the new Moloch
     function crossWithdraw(
         IMOLOCH _moloch,
         address _token,
         uint256 _amount,
         bool _transfer
     ) external memberOnly {
+        require(address(_moloch) != address(moloch), ERROR_INVALID_SELF_XWITHDRAW); /*Disallow crosswithdraw from self to prevent execution frontrun griefing*/
+        uint256 _balanceBefore = IERC20(_token).balanceOf(avatar); /*Save balance before so we can check for violation*/
         // Construct transaction data for safe to execute
         bytes memory withdrawData = abi.encodeWithSelector(
             _moloch.withdrawBalance.selector,
@@ -301,7 +306,7 @@ contract SafeMinion is Enum, Module {
             ERROR_CALL_FAIL
         );
 
-        // Transfers token into DAO.
+        // Transfers token into DAO treasury
         if (_transfer) {
             bool whitelisted = moloch.tokenWhitelist(_token);
             require(whitelisted, ERROR_NOT_WL);
@@ -315,6 +320,9 @@ contract SafeMinion is Enum, Module {
                 ERROR_CALL_FAIL
             );
         }
+        uint256 _balanceAfter = IERC20(_token).balanceOf(avatar); /*Save balance after so we can check for violation*/
+        
+        require(_balanceAfter >= _balanceBefore, ERROR_INVALID_BAL_XWITHDRAW); /*Check for violation where safe token balance has decreased*/
 
         emit CrossWithdraw(address(_moloch), _token, _amount);
     }

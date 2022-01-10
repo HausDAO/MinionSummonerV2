@@ -338,7 +338,9 @@ describe.only('Safe Minion Functionality', function () {
       })
       it('Prevents member from calling cross withdraw on self', async function () {
         expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
-        expect(safeMinion.crossWithdraw(moloch.address, anyErc20.address, 5, false)).to.be.revertedWith('Minion::invalid self crosswithdraw')
+        await moloch.submitProposal(gnosisSafe.address, 0, 0, 0, anyErc20.address, 10, anyErc20.address, '')
+        await doProposal(true, 0, moloch)
+        expect(safeMinion.crossWithdraw(moloch.address, anyErc20.address, 5, true)).to.be.revertedWith('Minion::invalid self crosswithdraw')
         expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
       })
 
