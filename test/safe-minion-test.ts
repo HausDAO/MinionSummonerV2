@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto'
 import { Contract, ContractFactory, BigNumberish, Wallet } from 'ethers'
 import { use, expect } from 'chai'
 import { AnyErc20 } from '../src/types/AnyErc20'
+import { BadMoloch } from '../src/types/BadMoloch'
 import { Moloch } from '../src/types/Moloch'
 import { DaoConditionalHelper } from '../src/types/DaoConditionalHelper'
 import { SafeMinion } from '../src/types/SafeMinion'
@@ -64,6 +65,9 @@ describe.only('Safe Minion Functionality', function () {
   let AnyERC20: ContractFactory
   let anyErc20: AnyErc20
 
+  let BadMoloch: ContractFactory
+  let badMoloch: BadMoloch
+
   let signers: SignerWithAddress[]
 
   let deployer: SignerWithAddress
@@ -98,6 +102,8 @@ describe.only('Safe Minion Functionality', function () {
     SignMessageLib = await ethers.getContractFactory('SignMessageLib')
     CompatibilityFallbackHandler = await ethers.getContractFactory('CompatibilityFallbackHandler')
     AnyERC20 = await ethers.getContractFactory('AnyERC20')
+    BadMoloch = await ethers.getContractFactory('BadMoloch')
+
     signers = await ethers.getSigners()
     deployer = signers[0]
     alice = signers[1]
@@ -323,6 +329,27 @@ describe.only('Safe Minion Functionality', function () {
         expect(await otherErc20.balanceOf(gnosisSafe.address)).to.equal(0)
         expect(await otherErc20.balanceOf(moloch.address)).to.equal(0)
       })
+    })
+
+    describe('Cross withdraw exploit attempts', function () {
+      let badMoloch: BadMoloch
+      this.beforeEach(async function() {
+        badMoloch = (await BadMoloch.deploy()) as BadMoloch
+      })
+      it('Prevents member from calling cross withdraw on self', async function () {
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        expect(safeMinion.crossWithdraw(moloch.address, anyErc20.address, 5, false)).to.be.revertedWith('Minion::invalid self crosswithdraw')
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+      })
+
+      it('Prevents member from calling crosswithdraw resulting in decrease of safe balance', async function () {
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        expect(await anyErc20.balanceOf(moloch.address)).to.equal(10000)
+        expect(safeMinion.crossWithdraw(badMoloch.address, anyErc20.address, 5, true)).to.be.revertedWith('Minion::invalid balance crosswithdraw')
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        expect(await anyErc20.balanceOf(moloch.address)).to.equal(10000)
+      })
+
     })
     
     describe('Execute as Minion', function () {
