@@ -15,7 +15,7 @@ async function main() {
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
   // const contractAddresses = xdai
-  const contractAddresses = kovanOptimism
+  const contractAddresses = optimism
 
   const SafeMinion = await ethers.getContractFactory('SafeMinion')
   const SafeMinionSummoner = await ethers.getContractFactory('SafeMinionSummoner')
