@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import { SafeMinion } from '../types/SafeMinion'
 import { SafeMinionSummoner } from '../types/SafeMinionSummoner'
-import { kovan, mainnet, polygon, rinkeby, xdai } from '../util/contractAddresses'
+import { kovan, mainnet, polygon, rinkeby, kovanOptimism, optimism, xdai } from '../util/contractAddresses'
 
 async function main() {
   const accounts = await ethers.getSigners()
@@ -10,12 +10,13 @@ async function main() {
     'Accounts:',
     accounts.map((a) => a.address)
   )
-  
+
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
-  const contractAddresses = xdai
-  
+  // const contractAddresses = xdai
+  const contractAddresses = kovanOptimism
+
   const SafeMinion = await ethers.getContractFactory('SafeMinion')
   const SafeMinionSummoner = await ethers.getContractFactory('SafeMinionSummoner')
   // const ConditionalMinionTemplate = await ethers.getContractFactory('ConditionalMinion')
