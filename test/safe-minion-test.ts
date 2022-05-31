@@ -11,6 +11,8 @@ import { SafeMinion } from '../src/types/SafeMinion'
 import { SafeMinionSummoner } from '../src/types/SafeMinionSummoner'
 // import { TestExecutor } from '../src/types/TestExecutor'
 import { GnosisSafe } from '../src/types/GnosisSafe'
+import { GnosisSafeProxyFactory } from '../src/types/GnosisSafeProxyFactory'
+import { ModuleProxyFactory } from '../src/types/ModuleProxyFactory'
 import { GnosisSafeProxy } from '../src/types/GnosisSafeProxy'
 import { CompatibilityFallbackHandler } from '../src/types/CompatibilityFallbackHandler'
 import { MultiSend } from '../src/types/MultiSend'
@@ -57,6 +59,12 @@ describe.only('Safe Minion Functionality', function () {
   let GnosisSafeProxy: ContractFactory
   let gnosisSafeProxy: GnosisSafeProxy
 
+  let GnosisSafeProxyFactory: ContractFactory
+  let gnosisSafeProxyFactory: GnosisSafeProxyFactory
+
+  let ModuleProxyFactory: ContractFactory
+  let moduleProxyFactory: ModuleProxyFactory
+
   let DaoConditionalHelper: ContractFactory
   let helper: DaoConditionalHelper
 
@@ -98,6 +106,10 @@ describe.only('Safe Minion Functionality', function () {
     AnyNft = await ethers.getContractFactory('AnyNFT')
     GnosisSafe = await ethers.getContractFactory('GnosisSafe')
     GnosisSafeProxy = await ethers.getContractFactory('GnosisSafeProxy')
+    GnosisSafeProxyFactory = await ethers.getContractFactory('GnosisSafeProxyFactory')
+    
+    
+    ModuleProxyFactory = await ethers.getContractFactory('ModuleProxyFactory')
     MultiSend = await ethers.getContractFactory('MultiSend')
     SignMessageLib = await ethers.getContractFactory('SignMessageLib')
     CompatibilityFallbackHandler = await ethers.getContractFactory('CompatibilityFallbackHandler')
@@ -120,13 +132,20 @@ describe.only('Safe Minion Functionality', function () {
     multisend = (await MultiSend.deploy()) as MultiSend
     signMessageLib = (await SignMessageLib.deploy()) as SignMessageLib
     handler = (await CompatibilityFallbackHandler.deploy()) as CompatibilityFallbackHandler
+    // gnosisSafeProxyFactory = (await GnosisSafeProxyFactory.deploy(gnosisSafeSingleton.address)) as GnosisSafeProxyFactory
+    const proxy = await GnosisSafeProxyFactory.deploy()
+    moduleProxyFactory = (await ModuleProxyFactory.deploy()) as ModuleProxyFactory
+    
     safeMinionTemplate = (await SafeMinion.deploy()) as SafeMinion
 
     safeMinionSummoner = (await SafeMinionSummoner.deploy(
       safeMinionTemplate.address,
       gnosisSafeSingleton.address,
       handler.address,
-      multisend.address
+      multisend.address,
+      proxy.address,
+      // gnosisSafeProxy.address,
+      moduleProxyFactory.address
     )) as SafeMinionSummoner
 
     testWallet = await testWalletAbstract.connect(ethers.provider)
@@ -242,6 +261,7 @@ describe.only('Safe Minion Functionality', function () {
     describe('Safe management', function () {
       it('Enables multiple modules to be activated on setup', async function () {
         const proxy = await GnosisSafeProxy.deploy(gnosisSafeSingleton.address)
+        // const proxy = await GnosisSafeProxyFactory.deploy()
         gnosisSafe = (await GnosisSafe.attach(proxy.address)) as GnosisSafe
         await safeMinionSummoner.summonMinion(moloch.address, gnosisSafe.address, '', minQuorum, 100)
         const newMinionCount = (await safeMinionSummoner.minionCount()).toNumber()
