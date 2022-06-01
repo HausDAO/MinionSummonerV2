@@ -591,8 +591,8 @@ contract SafeMinionSummoner is ModuleProxyFactory {
     /// @param _gnosisSingleton Template contract to be used for safe factory
     /// @param _gnosisFallbackLibrary Library contract to be used in configuring new safes
     /// @param _gnosisMultisendLibrary Library contract to be used in configuring new safes
-    /// @param _gnosisSafeProxyFactory Factory address to deploy safes (use official address for UI to work)
-    /// @param _moduleProxyFactory Zodiac Module Factory for custom module deploy
+    /// @param _gnosisSafeProxyFactory Factory address to deploy safes (use official)
+    /// @param _moduleProxyFactory Todo
     constructor(
         address payable _safeMinionSingleton,
         address _gnosisSingleton,
@@ -636,7 +636,7 @@ contract SafeMinionSummoner is ModuleProxyFactory {
 
         SafeMinion _minion = SafeMinion(
             payable(
-                deployModule(
+                moduleProxyFactory.deployModule(
                     safeMinionSingleton,
                     abi.encodeWithSignature("setUp(bytes)", _initializer),
                     _saltNonce
