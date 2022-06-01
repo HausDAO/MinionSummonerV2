@@ -38,7 +38,7 @@ async function main() {
     gasLimit: 3000000,
     gasPrice: 80000000000,
   })) as SafeMinion;
-  console.log({ safeMinionTemplate });
+  // console.log({ safeMinionTemplate });
   await safeMinionTemplate.deployTransaction.wait();
   console.log("safe deployed");
   const safeMinionSummoner = (await SafeMinionSummoner.deploy(
@@ -65,6 +65,14 @@ async function main() {
     // conditionalMinionFactory: conditionalMinionFactory.address,
     // erc1271MinionFactory: erc1271MinionFactory.address,
   });
+
+  console.log('deploy params', safeMinionTemplate.address,
+  contractAddresses.gnosisSingleton,
+  contractAddresses.gnosisFallback,
+  contractAddresses.gnosisMultisend,
+  contractAddresses.gnosisSafeProxyFactory,
+  contractAddresses.gnosisModuleProxyFactory);
+  
 }
 
 main()
