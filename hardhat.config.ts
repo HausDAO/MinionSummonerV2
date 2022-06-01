@@ -32,6 +32,16 @@ function mnemonic() {
   }
   return "";
 }
+function etherscan() {
+  try {
+    return fs.readFileSync("./etherscan.txt").toString().trim();
+  } catch (e) {
+    if (defaultNetwork !== "localhost") {
+      console.log("☢️ WARNING: No etherscan file");
+    }
+  }
+  return "";
+}
 
 const config: HardhatUserConfig = {
   networks: {
@@ -99,7 +109,7 @@ const config: HardhatUserConfig = {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
     // apiKey: "61ED96HQAY6PASTEWRXN6AMYQEKM8SYTRY" // etherscan
-    apiKey: "9QW4RIZ2EPRSYMPN54FQ4EZIMUX2G9AJPW"// polygon scan
+    apiKey: etherscan(),
   },
   solidity: {
     compilers: [

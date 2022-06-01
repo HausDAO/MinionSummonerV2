@@ -24,6 +24,14 @@ export const kovan: GnosisContracts = {
  gnosisModuleProxyFactory: '0x00000000062c52e29e8029dc2413172f6d619d85',
 }
 
+export const goerli: GnosisContracts = {
+  gnosisSingleton:  '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552',
+  gnosisMultisend: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
+  gnosisFallback: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
+  gnosisSafeProxyFactory: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
+  gnosisModuleProxyFactory: '',
+ }
+
 export const mainnet: GnosisContracts = {
  gnosisSingleton:  '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552',
  gnosisMultisend: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',

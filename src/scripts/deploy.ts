@@ -7,6 +7,7 @@ import {
   polygon,
   rinkeby,
   xdai,
+  goerli
 } from "../util/contractAddresses";
 
 async function main() {
@@ -20,7 +21,8 @@ async function main() {
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
-  const contractAddresses = xdai;
+  // const contractAddresses = xdai;
+  const contractAddresses = rinkeby;
 
   const SafeMinion = await ethers.getContractFactory("SafeMinion");
   const SafeMinionSummoner = await ethers.getContractFactory(
@@ -45,7 +47,7 @@ async function main() {
     contractAddresses.gnosisFallback,
     contractAddresses.gnosisMultisend,
     contractAddresses.gnosisSafeProxyFactory,
-    contractAddresses.gnosisModuleProxyFactory
+    contractAddresses.gnosisModuleProxyFactory,
     { gasPrice: 80000000000 }
   )) as SafeMinionSummoner;
 
