@@ -1,10 +1,10 @@
 // Based on https://github.com/HausDAO/MinionSummoner/blob/main/MinionFactory.sol
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.7.5;
+pragma solidity ^0.8.0;
 
 interface IERC721 {
     // brief interface for minion erc721 token txs

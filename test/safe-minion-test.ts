@@ -4,12 +4,15 @@ import { randomBytes } from 'crypto'
 import { Contract, ContractFactory, BigNumberish, Wallet } from 'ethers'
 import { use, expect } from 'chai'
 import { AnyErc20 } from '../src/types/AnyErc20'
+import { BadMoloch } from '../src/types/BadMoloch'
 import { Moloch } from '../src/types/Moloch'
 import { DaoConditionalHelper } from '../src/types/DaoConditionalHelper'
 import { SafeMinion } from '../src/types/SafeMinion'
 import { SafeMinionSummoner } from '../src/types/SafeMinionSummoner'
 // import { TestExecutor } from '../src/types/TestExecutor'
 import { GnosisSafe } from '../src/types/GnosisSafe'
+import { GnosisSafeProxyFactory } from '../src/types/GnosisSafeProxyFactory'
+import { ModuleProxyFactory } from '../src/types/ModuleProxyFactory'
 import { GnosisSafeProxy } from '../src/types/GnosisSafeProxy'
 import { CompatibilityFallbackHandler } from '../src/types/CompatibilityFallbackHandler'
 import { MultiSend } from '../src/types/MultiSend'
@@ -56,6 +59,12 @@ describe.only('Safe Minion Functionality', function () {
   let GnosisSafeProxy: ContractFactory
   let gnosisSafeProxy: GnosisSafeProxy
 
+  let GnosisSafeProxyFactory: ContractFactory
+  let gnosisSafeProxyFactory: GnosisSafeProxyFactory
+
+  let ModuleProxyFactory: ContractFactory
+  let moduleProxyFactory: ModuleProxyFactory
+
   let DaoConditionalHelper: ContractFactory
   let helper: DaoConditionalHelper
 
@@ -63,6 +72,9 @@ describe.only('Safe Minion Functionality', function () {
 
   let AnyERC20: ContractFactory
   let anyErc20: AnyErc20
+
+  let BadMoloch: ContractFactory
+  let badMoloch: BadMoloch
 
   let signers: SignerWithAddress[]
 
@@ -94,10 +106,16 @@ describe.only('Safe Minion Functionality', function () {
     AnyNft = await ethers.getContractFactory('AnyNFT')
     GnosisSafe = await ethers.getContractFactory('GnosisSafe')
     GnosisSafeProxy = await ethers.getContractFactory('GnosisSafeProxy')
+    GnosisSafeProxyFactory = await ethers.getContractFactory('GnosisSafeProxyFactory')
+    
+    
+    ModuleProxyFactory = await ethers.getContractFactory('ModuleProxyFactory')
     MultiSend = await ethers.getContractFactory('MultiSend')
     SignMessageLib = await ethers.getContractFactory('SignMessageLib')
     CompatibilityFallbackHandler = await ethers.getContractFactory('CompatibilityFallbackHandler')
     AnyERC20 = await ethers.getContractFactory('AnyERC20')
+    BadMoloch = await ethers.getContractFactory('BadMoloch')
+
     signers = await ethers.getSigners()
     deployer = signers[0]
     alice = signers[1]
@@ -114,14 +132,20 @@ describe.only('Safe Minion Functionality', function () {
     multisend = (await MultiSend.deploy()) as MultiSend
     signMessageLib = (await SignMessageLib.deploy()) as SignMessageLib
     handler = (await CompatibilityFallbackHandler.deploy()) as CompatibilityFallbackHandler
+    // gnosisSafeProxyFactory = (await GnosisSafeProxyFactory.deploy(gnosisSafeSingleton.address)) as GnosisSafeProxyFactory
+    const proxy = await GnosisSafeProxyFactory.deploy()
+    moduleProxyFactory = (await ModuleProxyFactory.deploy()) as ModuleProxyFactory
+    
     safeMinionTemplate = (await SafeMinion.deploy()) as SafeMinion
-    const molochTemplate = await Moloch.deploy()
 
     safeMinionSummoner = (await SafeMinionSummoner.deploy(
       safeMinionTemplate.address,
       gnosisSafeSingleton.address,
       handler.address,
-      multisend.address
+      multisend.address,
+      proxy.address,
+      // gnosisSafeProxy.address,
+      moduleProxyFactory.address
     )) as SafeMinionSummoner
 
     testWallet = await testWalletAbstract.connect(ethers.provider)
@@ -237,6 +261,7 @@ describe.only('Safe Minion Functionality', function () {
     describe('Safe management', function () {
       it('Enables multiple modules to be activated on setup', async function () {
         const proxy = await GnosisSafeProxy.deploy(gnosisSafeSingleton.address)
+        // const proxy = await GnosisSafeProxyFactory.deploy()
         gnosisSafe = (await GnosisSafe.attach(proxy.address)) as GnosisSafe
         await safeMinionSummoner.summonMinion(moloch.address, gnosisSafe.address, '', minQuorum, 100)
         const newMinionCount = (await safeMinionSummoner.minionCount()).toNumber()
@@ -324,6 +349,29 @@ describe.only('Safe Minion Functionality', function () {
         expect(await otherErc20.balanceOf(gnosisSafe.address)).to.equal(0)
         expect(await otherErc20.balanceOf(moloch.address)).to.equal(0)
       })
+    })
+
+    describe('Cross withdraw exploit attempts', function () {
+      let badMoloch: BadMoloch
+      this.beforeEach(async function() {
+        badMoloch = (await BadMoloch.deploy()) as BadMoloch
+      })
+      it('Prevents member from calling cross withdraw on self', async function () {
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        await moloch.submitProposal(gnosisSafe.address, 0, 0, 0, anyErc20.address, 10, anyErc20.address, '')
+        await doProposal(true, 0, moloch)
+        expect(safeMinion.crossWithdraw(moloch.address, anyErc20.address, 5, true)).to.be.revertedWith('Minion::invalid self crosswithdraw')
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+      })
+
+      it('Prevents member from calling crosswithdraw resulting in decrease of safe balance', async function () {
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        expect(await anyErc20.balanceOf(moloch.address)).to.equal(10000)
+        expect(safeMinion.crossWithdraw(badMoloch.address, anyErc20.address, 5, true)).to.be.revertedWith('Minion::invalid balance crosswithdraw')
+        expect(await anyErc20.balanceOf(gnosisSafe.address)).to.equal(500)
+        expect(await anyErc20.balanceOf(moloch.address)).to.equal(10000)
+      })
+
     })
     
     describe('Execute as Minion', function () {
