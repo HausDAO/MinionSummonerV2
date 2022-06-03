@@ -9,6 +9,9 @@ import "@gnosis.pm/safe-contracts/contracts/libraries/MultiSend.sol";
 import "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import "@gnosis.pm/zodiac/contracts/factory/ModuleProxyFactory.sol";
 
+import "@gnosis.pm/safe-contracts/contracts/proxies/GnosisSafeProxyFactory.sol";
+
+
 interface IERC20 {
     // brief interface for moloch erc20 token txs
     function balanceOf(address who) external view returns (uint256);
@@ -552,6 +555,10 @@ contract SafeMinionSummoner is ModuleProxyFactory {
     // Library to use for all safe transaction executions
     address public immutable gnosisMultisendLibrary;
 
+    //
+    GnosisSafeProxyFactory gnosisSafeProxyFactory;
+    ModuleProxyFactory moduleProxyFactory;
+
     // Track list and count of deployed minions
     address[] public minionList;
 
@@ -584,16 +591,22 @@ contract SafeMinionSummoner is ModuleProxyFactory {
     /// @param _gnosisSingleton Template contract to be used for safe factory
     /// @param _gnosisFallbackLibrary Library contract to be used in configuring new safes
     /// @param _gnosisMultisendLibrary Library contract to be used in configuring new safes
+    /// @param _gnosisSafeProxyFactory Factory address to deploy safes (use official)
+    /// @param _moduleProxyFactory Todo
     constructor(
         address payable _safeMinionSingleton,
         address _gnosisSingleton,
         address _gnosisFallbackLibrary,
-        address _gnosisMultisendLibrary
+        address _gnosisMultisendLibrary,
+        address _gnosisSafeProxyFactory,
+        address _moduleProxyFactory
     ) {
         safeMinionSingleton = _safeMinionSingleton;
         gnosisSingleton = _gnosisSingleton;
         gnosisFallbackLibrary = _gnosisFallbackLibrary;
         gnosisMultisendLibrary = _gnosisMultisendLibrary;
+        gnosisSafeProxyFactory = GnosisSafeProxyFactory(_gnosisSafeProxyFactory);
+        moduleProxyFactory = ModuleProxyFactory(_moduleProxyFactory);
     }
 
     /// @dev Function to only summon a minion to be attached to an existing safe
@@ -616,14 +629,14 @@ contract SafeMinionSummoner is ModuleProxyFactory {
             gnosisMultisendLibrary,
             _minQuorum
         );
-        bytes memory _initializerCall = abi.encodeWithSignature(
-            "setUp(bytes)",
-            _initializer
-        );
+        // bytes memory _initializerCall = abi.encodeWithSignature(
+        //     "setUp(bytes)",
+        //     _initializer
+        // );
 
         SafeMinion _minion = SafeMinion(
             payable(
-                deployModule(
+                moduleProxyFactory.deployModule(
                     safeMinionSingleton,
                     abi.encodeWithSignature("setUp(bytes)", _initializer),
                     _saltNonce
@@ -660,9 +673,9 @@ contract SafeMinionSummoner is ModuleProxyFactory {
         // Deploy new safe but do not set it up yet
         GnosisSafe _safe = GnosisSafe(
             payable(
-                createProxy(
+                gnosisSafeProxyFactory.createProxy(
                     gnosisSingleton,
-                    keccak256(abi.encodePacked(_moloch, _saltNonce))
+                    abi.encodePacked(_moloch, _saltNonce)
                 )
             )
         );
@@ -676,7 +689,7 @@ contract SafeMinionSummoner is ModuleProxyFactory {
 
         // Deploy new minion but do not set it up yet
         SafeMinion _minion = SafeMinion(
-            deployModule(
+            ModuleProxyFactory.deployModule(
                 safeMinionSingleton,
                 abi.encodeWithSignature("setUp(bytes)", _initializer),
                 _saltNonce
