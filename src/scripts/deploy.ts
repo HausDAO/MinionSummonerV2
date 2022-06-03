@@ -7,8 +7,11 @@ import {
   polygon,
   rinkeby,
   xdai,
-  goerli
+  goerli,
+  kovanOptimism, 
+  optimism,
 } from "../util/contractAddresses";
+
 
 async function main() {
   const accounts = await ethers.getSigners();
@@ -21,6 +24,7 @@ async function main() {
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
+  // const contractAddresses = optimism
   // const contractAddresses = xdai;
   const contractAddresses = rinkeby;
 
@@ -28,6 +32,7 @@ async function main() {
   const SafeMinionSummoner = await ethers.getContractFactory(
     "SafeMinionSummoner"
   );
+
   // const ConditionalMinionTemplate = await ethers.getContractFactory('ConditionalMinion')
   // const ConditionalMinionSummoner = await ethers.getContractFactory('ConditionalMinionFactory')
   // const ERC1271MinionTemplate = await ethers.getContractFactory('ERC1271Minion')
