@@ -116,6 +116,20 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic(),
       },
     },
+    optimism: {
+      url: "https://mainnet.optimism.io",
+      gasPrice: 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    'optimism-kovan': {
+      url: "https://kovan.optimism.io",
+      gasPrice: 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
   },
   etherscan: {
     // Your API key for Etherscan

@@ -71,3 +71,4 @@ export const polygon: GnosisContracts = {
   gnosisSafeProxyFactory: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
   gnosisModuleProxyFactory: '0x00000000062c52e29e8029dc2413172f6d619d85',
 }
+
