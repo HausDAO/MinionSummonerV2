@@ -689,7 +689,7 @@ contract SafeMinionSummoner is ModuleProxyFactory {
 
         // Deploy new minion but do not set it up yet
         SafeMinion _minion = SafeMinion(
-            ModuleProxyFactory.deployModule(
+            moduleProxyFactory.deployModule(
                 safeMinionSingleton,
                 abi.encodeWithSignature("setUp(bytes)", _initializer),
                 _saltNonce
