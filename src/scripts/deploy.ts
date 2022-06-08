@@ -8,6 +8,7 @@ import {
   rinkeby,
   xdai,
   goerli,
+  arbitrum
   kovanOptimism, 
   optimism,
 } from "../util/contractAddresses";
@@ -23,10 +24,14 @@ async function main() {
 
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
+  const contractAddresses = optimism
+  // const contractAddresses = arbitrum
   // const contractAddresses = mainnet
   // const contractAddresses = optimism
   // const contractAddresses = xdai;
-  const contractAddresses = rinkeby;
+  // const contractAddresses = rinkeby;
+  // const contractAddresses = goerli;
+  // const contractAddresses = kovan;
 
   const SafeMinion = await ethers.getContractFactory("SafeMinion");
   const SafeMinionSummoner = await ethers.getContractFactory(
@@ -39,21 +44,18 @@ async function main() {
   // const ERC1271MinionSummoner = await ethers.getContractFactory('ERC1271MinionFactory')
   console.log("ready for deploy");
 
-  const safeMinionTemplate = (await SafeMinion.deploy({
-    gasLimit: 3000000,
-    gasPrice: 80000000000,
-  })) as SafeMinion;
+  // setting gas limits on arbitrum will not work
+  // const safeMinionTemplate = (await SafeMinion.deploy()) as SafeMinion;
   // console.log({ safeMinionTemplate });
-  await safeMinionTemplate.deployTransaction.wait();
+  // await safeMinionTemplate.deployTransaction.wait();
   console.log("safe deployed");
   const safeMinionSummoner = (await SafeMinionSummoner.deploy(
-    safeMinionTemplate.address,
+    "0x51498dddd2a8cdec82932e08a37ebaf346c38efd",
     contractAddresses.gnosisSingleton,
     contractAddresses.gnosisFallback,
     contractAddresses.gnosisMultisend,
     contractAddresses.gnosisSafeProxyFactory,
-    contractAddresses.gnosisModuleProxyFactory,
-    { gasPrice: 80000000000 }
+    contractAddresses.gnosisModuleProxyFactory
   )) as SafeMinionSummoner;
 
   // const conditionalMinionTemplate = (await ConditionalMinionTemplate.deploy()) as ConditionalMinion
@@ -66,12 +68,12 @@ async function main() {
 
   console.log({
     safeMinionSummoner: safeMinionSummoner.address,
-    safeMinionTemplate: safeMinionTemplate.address,
+    safeMinionTemplate: "0x51498dddd2a8cdec82932e08a37ebaf346c38efd",
     // conditionalMinionFactory: conditionalMinionFactory.address,
     // erc1271MinionFactory: erc1271MinionFactory.address,
   });
 
-  console.log('deploy params', safeMinionTemplate.address,
+  console.log('deploy params', "0x51498dddd2a8cdec82932e08a37ebaf346c38efd",
   contractAddresses.gnosisSingleton,
   contractAddresses.gnosisFallback,
   contractAddresses.gnosisMultisend,

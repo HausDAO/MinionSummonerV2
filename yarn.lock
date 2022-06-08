@@ -576,10 +576,10 @@
   resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.0.6.tgz#1c695263d5b46a375dcda48c248c4fba9dfe2fc2"
   integrity sha512-q2Cjp20IB48rEn2NPjR1qxsIQBvFVYW9rFRCFq+bC4RUrn1Ljz3g4wM8uSlgIBZYBi2JMXxmOzFqHraczxq4Ng==
 
-"@nomiclabs/hardhat-etherscan@^2.1.5":
-  version "2.1.8"
-  resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-etherscan/-/hardhat-etherscan-2.1.8.tgz#e206275e96962cd15e5ba9148b44388bc922d8c2"
-  integrity sha512-0+rj0SsZotVOcTLyDOxnOc3Gulo8upo0rsw/h+gBPcmtj91YqYJNhdARHoBxOhhE8z+5IUQPx+Dii04lXT14PA==
+"@nomiclabs/hardhat-etherscan@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-etherscan/-/hardhat-etherscan-3.0.4.tgz#b12e3e226a5b73c4a66d0e6943f948bd093b2711"
+  integrity sha512-AZPlnyCYp3YObmhtsFo6RWgY/81fQKRF5h42iV22H4jz9MwP+SWeoB99YVPLnxId2fmAYu3VgCNeE9QpApv06g==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@ethersproject/address" "^5.0.2"
@@ -5928,7 +5928,7 @@ node-environment-flags@1.0.6:
     object.getownpropertydescriptors "^2.0.3"
     semver "^5.7.0"
 
-node-fetch@^2.6.0, node-fetch@^2.6.1, node-fetch@^2.6.7:
+node-fetch@^2.6.1, node-fetch@^2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
