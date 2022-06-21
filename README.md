@@ -13,6 +13,8 @@ Polygon: xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
 xDai: 0xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
+Görli: 0xA1b97D22e22507498B350A9edeA85c44bA7DBC01
+
 ## Documetation is still WIP
 
 ### Safe Minion walkthrough and docs
@@ -34,9 +36,9 @@ Through Minion Safes, DAOHaus DAOs can do the following (and much more):
 * Elect temporary delegates to manage assets in a Safe
 * Interact with any decentralized application through the Safe Wallet Connect integration
 * Create custom 'rage quit' adapters to manage non-divisible assets or multi-bank treasuries
-* Update a current Gnosis Safe to a Daohaus DAO 
+* Update a current Gnosis Safe to a Daohaus DAO
 * Manage multiple Safes
-* Transfer an entire set of assets (DAO 
+* Transfer an entire set of assets (DAO
 Mergers & Acquisitions)
 
 ### Why Zodiac
@@ -58,11 +60,11 @@ With assets in a Gnosis Safe, we can enable a wide variety of governance options
 
 
 
-| Governance | Rules |
-| -------- | -------- |
-| Vanilla Moloch     | Share weighted, full voting & grace periods |
-| Quorum     | Early execution allowed if quorum is reached |
-| Delegates     | Temporarily elected EOAs to act as delegates of the DAO for high stakes, time sensitive executions |
+| Governance     | Rules                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| Vanilla Moloch | Share weighted, full voting & grace periods                                                        |
+| Quorum         | Early execution allowed if quorum is reached                                                       |
+| Delegates      | Temporarily elected EOAs to act as delegates of the DAO for high stakes, time sensitive executions |
 
 
 
@@ -139,13 +141,14 @@ If the DAO has a Safe already, they have to deploy in 2 steps.
 
 
 
-| Network | Summoner |
-| -------- | -------- |
-| Rinkeby     | https://rinkeby.etherscan.io/address/0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8   |
-| Kovan     | https://kovan.etherscan.io/address/0xa1b97d22e22507498b350a9edea85c44ba7dbc01     |
-| Mainnet     | https://etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108     |
-| Polygon     | https://polygonscan.com/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01     |
-| xDai     | https://blockscout.com/xdai/mainnet/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01/transactions     |
+| Network | Summoner                                                                                            |
+| ------- | --------------------------------------------------------------------------------------------------- |
+| Rinkeby | https://rinkeby.etherscan.io/address/0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8                     |
+| Kovan   | https://kovan.etherscan.io/address/0xa1b97d22e22507498b350a9edea85c44ba7dbc01                       |
+| Mainnet | https://etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108                             |
+| Polygon | https://polygonscan.com/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01                          |
+| xDai    | https://blockscout.com/xdai/mainnet/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01/transactions |
+| Görli   | https://goerli.etherscan.io/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01                      |
 
 ## Deploy one today!
 
