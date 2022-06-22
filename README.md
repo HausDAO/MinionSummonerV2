@@ -13,7 +13,7 @@ Polygon: xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
 xDai: 0xA1b97D22e22507498B350A9edeA85c44bA7DBC01
 
-Görli: 0xA1b97D22e22507498B350A9edeA85c44bA7DBC01
+Görli: 0xDd4f9aBB56F96C333a3c2120252C6Fe827a2Bfb4
 
 ## Documetation is still WIP
 
@@ -148,7 +148,7 @@ If the DAO has a Safe already, they have to deploy in 2 steps.
 | Mainnet | https://etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108                             |
 | Polygon | https://polygonscan.com/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01                          |
 | xDai    | https://blockscout.com/xdai/mainnet/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01/transactions |
-| Görli   | https://goerli.etherscan.io/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01                      |
+| Görli   | https://goerli.etherscan.io/address/0xDd4f9aBB56F96C333a3c2120252C6Fe827a2Bfb4                      |
 
 ## Deploy one today!
 
