@@ -29,7 +29,15 @@ async function main() {
   console.log({safeMinionTemplate})
   await safeMinionTemplate.deployTransaction.wait()
   console.log('safe deployed')
-  const safeMinionSummoner = (await SafeMinionSummoner.deploy(safeMinionTemplate.address, contractAddresses.gnosisSingleton, contractAddresses.gnosisFallback, contractAddresses.gnosisMultisend, {gasPrice: 80000000000})) as SafeMinionSummoner
+  const safeMinionSummoner = (await SafeMinionSummoner.deploy(
+    safeMinionTemplate.address,
+    contractAddresses.gnosisSingleton,
+    contractAddresses.gnosisFallback,
+    contractAddresses.gnosisMultisend,
+    contractAddresses.gnosisSafeProxyFactory,
+    contractAddresses.gnosisModuleProxyFactory,
+    {gasPrice: 80000000000})
+  ) as SafeMinionSummoner
 
   // const conditionalMinionTemplate = (await ConditionalMinionTemplate.deploy()) as ConditionalMinion
   // const conditionalMinionFactory = await ConditionalMinionSummoner.deploy(conditionalMinionTemplate.address)
