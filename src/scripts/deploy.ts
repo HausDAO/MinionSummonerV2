@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import { SafeMinion } from '../types/SafeMinion'
 import { SafeMinionSummoner } from '../types/SafeMinionSummoner'
-import { kovan, mainnet, polygon, rinkeby, xdai } from '../util/contractAddresses'
+import { kovan, mainnet, polygon, rinkeby, xdai, goerli } from '../util/contractAddresses'
 
 async function main() {
   const accounts = await ethers.getSigners()
@@ -10,12 +10,13 @@ async function main() {
     'Accounts:',
     accounts.map((a) => a.address)
   )
-  
+
   // const contractAddresses = polygon
   // const contractAddresses = mainnet
   // const contractAddresses = mainnet
-  const contractAddresses = xdai
-  
+  // const contractAddresses = xdai
+  const contractAddresses = goerli
+
   const SafeMinion = await ethers.getContractFactory('SafeMinion')
   const SafeMinionSummoner = await ethers.getContractFactory('SafeMinionSummoner')
   // const ConditionalMinionTemplate = await ethers.getContractFactory('ConditionalMinion')
@@ -28,7 +29,15 @@ async function main() {
   console.log({safeMinionTemplate})
   await safeMinionTemplate.deployTransaction.wait()
   console.log('safe deployed')
-  const safeMinionSummoner = (await SafeMinionSummoner.deploy(safeMinionTemplate.address, contractAddresses.gnosisSingleton, contractAddresses.gnosisFallback, contractAddresses.gnosisMultisend, {gasPrice: 80000000000})) as SafeMinionSummoner
+  const safeMinionSummoner = (await SafeMinionSummoner.deploy(
+    safeMinionTemplate.address,
+    contractAddresses.gnosisSingleton,
+    contractAddresses.gnosisFallback,
+    contractAddresses.gnosisMultisend,
+    contractAddresses.gnosisSafeProxyFactory,
+    contractAddresses.gnosisModuleProxyFactory,
+    {gasPrice: 80000000000})
+  ) as SafeMinionSummoner
 
   // const conditionalMinionTemplate = (await ConditionalMinionTemplate.deploy()) as ConditionalMinion
   // const conditionalMinionFactory = await ConditionalMinionSummoner.deploy(conditionalMinionTemplate.address)

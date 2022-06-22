@@ -1,18 +1,12 @@
 // for verifying SafeMinionSummoner on etherescan.io
-import { kovanOptimism, optimism } from './src/util/contractAddresses'
-
-// const contractAddresses = polygon
-// const contractAddresses = mainnet
-// const contractAddresses = mainnet
-// const contractAddresses = xdai
-const contractAddresses = optimism
+import { goerli } from './src/util/contractAddresses';
 
 // arguments for the --constructor-args flag
 module.exports = [
   '', // safeMinionTemplate address
-  kovanOptimism.gnosisSingleton, // gnosisSingleton address
-  kovanOptimism.gnosisFallback, // gnosisFallback address
-  kovanOptimism.gnosisMultisend // gnosisMultisend address
+  goerli.gnosisSingleton, // gnosisSingleton address
+  goerli.gnosisFallback, // gnosisFallback address
+  goerli.gnosisMultisend // gnosisMultisend address
 ];
 
 // sample cli command:
