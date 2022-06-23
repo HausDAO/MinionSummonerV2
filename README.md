@@ -3,10 +3,6 @@ Summon All the Minions
 
 ## Safe Minion Deployments
 
-Rinkeby: 0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8
-
-Kovan: 0xa1b97d22e22507498b350a9edea85c44ba7dbc01
-
 Mainnet: 0xbc37509a283e2bb67fd151c34e72e826c501e108
 
 Polygon: xA1b97D22e22507498B350A9edeA85c44bA7DBC01
@@ -143,8 +139,6 @@ If the DAO has a Safe already, they have to deploy in 2 steps.
 
 | Network | Summoner                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------- |
-| Rinkeby | https://rinkeby.etherscan.io/address/0x3f13abc8931c0e381ce6d1be9f978ae6e9d99cb8                     |
-| Kovan   | https://kovan.etherscan.io/address/0xa1b97d22e22507498b350a9edea85c44ba7dbc01                       |
 | Mainnet | https://etherscan.io/address/0xbc37509a283e2bb67fd151c34e72e826c501e108                             |
 | Polygon | https://polygonscan.com/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01                          |
 | xDai    | https://blockscout.com/xdai/mainnet/address/0xA1b97D22e22507498B350A9edeA85c44bA7DBC01/transactions |
