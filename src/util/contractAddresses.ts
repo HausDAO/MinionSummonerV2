@@ -61,7 +61,7 @@ export const xdai: GnosisContracts = {
   gnosisMultisend: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
   gnosisFallback: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
   gnosisSafeProxyFactory: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
-  gnosisModuleProxyFactory: '',
+  gnosisModuleProxyFactory: '0x00000000062c52e29e8029dc2413172f6d619d85',
 }
 
 export const polygon: GnosisContracts = {
@@ -71,4 +71,14 @@ export const polygon: GnosisContracts = {
   gnosisSafeProxyFactory: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
   gnosisModuleProxyFactory: '0x00000000062c52e29e8029dc2413172f6d619d85',
 }
+
+export const celo: GnosisContracts = {
+  gnosisSingleton: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E', // gnosis l2
+  gnosisMultisend: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761',
+  gnosisFallback: '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4',
+  gnosisSafeProxyFactory: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
+  gnosisModuleProxyFactory: '0x270c012B6C2A61153e8A6d82F2Cb4F88ddB7fD5E', // not official
+}
+
+
 

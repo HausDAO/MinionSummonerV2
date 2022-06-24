@@ -3,6 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
 import "hardhat-gas-reporter"
 import "@nomiclabs/hardhat-etherscan";
+import "hardhat-deploy";
 
 import * as fs from 'fs'
 import "hardhat-typechain";
@@ -101,6 +102,12 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic(),
       },
     },
+    'celo': {
+      url: "https://forno.celo.org",
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
     matic: {
       // url: 'https://rpc-mainnet.maticvigil.com/v1/036f1ba8516f0eee2204a574a960b68437ac8661',
       url: 'https://polygon-mainnet.infura.io/v3/cc7ca25d68f246f393d7630842360c47',
@@ -111,13 +118,6 @@ const config: HardhatUserConfig = {
     },
     mumbai: {
       url: 'https://rpc-mumbai.maticvigil.com/v1/036f1ba8516f0eee2204a574a960b68437ac8661',
-      gasPrice: 1000000000,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-    },
-    optimism: {
-      url: "https://mainnet.optimism.io",
       gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
