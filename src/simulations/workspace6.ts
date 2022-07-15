@@ -35,9 +35,9 @@ async function main() {
   // const molochTemplate = await Moloch.deploy()
   // const molochSummoner = (await MolochSummoner.deploy(molochTemplate.address)) as MolochSummoner
   // const anyErc20 = (await AnyERC20.deploy()) as AnyErc20
-  const minionAddr = '0xde1eaae681eed5f9b4541f3eda5d0326f9935707'
-  const safeAddr = '0xf1d1165b922fecb1227e5dfb46b4a19015972f62'
-  const atokenAddr = '0x997311509f997cfc4a876a3265711cc325a64f14'
+  const minionAddr = '0x5840101D4add687518aeEbF88250062B309eaa7d'
+  const safeAddr = '0xc9744ea6f368c1bcd9f910df0b83925245a6b2c2'
+  const atokenAddr = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'
   const multisendAddr = '0xa238cbeb142c10ef7ad8442c6d1f9e89e07e7761'
   
   // const weth9Mainnet = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -50,7 +50,7 @@ async function main() {
   const minion = (await SafeMinion.attach(minionAddr)) as SafeMinion
   
 
-  const action_1 = atoken.interface.encodeFunctionData('transferOwnership', [safeAddr])
+  const action_1 = atoken.interface.encodeFunctionData('transfer', [safeAddr, "98510000000000000000"])
   const action_2 = minion.interface.encodeFunctionData('executeAsMinion', [atokenAddr, 0, action_1])
   console.log({action_1})
   console.log({action_2})

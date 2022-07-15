@@ -1,4 +1,4 @@
-pragma solidity 0.7.5;
+pragma solidity ^0.8.4;
 //SPDX-License-Identifier: MIT
 
 //import "hardhat/console.sol";
@@ -13,7 +13,7 @@ contract AnyNFT is ERC721 {
   Counters.Counter private _tokenIds;
 
   constructor() public ERC721("AnyNFT", "ANFT") {
-    _setBaseURI("https://ipfs.io/ipfs/");
+   
   }
 
   function mintItem(address to, string memory tokenURI)
@@ -24,7 +24,7 @@ contract AnyNFT is ERC721 {
 
       uint256 id = _tokenIds.current();
       _mint(to, id);
-      _setTokenURI(id, tokenURI);
+      // _setTokenURI(id, tokenURI);
 
       return id;
   }
